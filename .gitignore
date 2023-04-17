@@ -34,5 +34,8 @@
 # ignore build folder
 build/
 
+# ignore output folder
+output/
+
 # ignore temporary MATLAB files
 *.asv
