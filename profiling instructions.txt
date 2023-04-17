@@ -1,0 +1,5 @@
+run in debug mode then do the following:
+
+gprof visibility_based_global_path_planner.exe gmon.out | gprof2dot -s -w | dot -Gdpi=400 -Tpng -o profiling_results.png
+
+requires gprof2dot in python and some other graphics software that is open source and easy to get that I forgot its name

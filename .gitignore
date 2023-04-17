@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# ignore build folder
+build/
+
+# ignore temporary MATLAB files
+*.asv
