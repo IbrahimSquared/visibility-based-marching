@@ -49,8 +49,8 @@ class Field {
   }
 
   // Access methods
-  inline T& operator()(size_t x, size_t y) { return data_[y * ncols_ + x]; }
-  inline const T& operator()(size_t x, size_t y) const { return data_[y * ncols_ + x]; }
+  inline T& operator()(size_t y, size_t x) { return data_[y * ncols_ + x]; }
+  inline const T& operator()(size_t y, size_t x) const { return data_[y * ncols_ + x]; }
     
   void fill(T value) {
     for (size_t i = 0; i < size_; ++i)
