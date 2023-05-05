@@ -369,7 +369,7 @@ if settings.visibilityBasedSolver && settings.saveResults
         filename_visibilityBased_cameFrom = "output/visibilityBased_cameFrom.txt";
         T_visibilityBased_cameFrom = readtable(filename_visibilityBased_cameFrom,'Delimiter',' ');
         visibilityBased_cameFrom = T_visibilityBased_cameFrom.Variables;
-        plotCameFrom = true;
+        plotCameFrom = false;
     end
 
     if settings.saveLightSources
