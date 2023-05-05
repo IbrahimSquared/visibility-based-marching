@@ -771,6 +771,4 @@ end
 % {500, 500, 74, 74, 74, 484}
 %% Expfig
 % addpath(genpath('expfig'))
-% export_fig werwqwsd -r250 -transparent -png
-% % export_fig visibilityBased_x -r400 -transparent -png
-% % export_fig ble -transparent -png -native -preserve_size
+% export_fig test_output -r250 -transparent -png
