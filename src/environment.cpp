@@ -70,15 +70,6 @@ void environment::generateNewEnvironmentFromSettings() {
     }
   }
 
-  int row_1 = 0; int row_2 = 820;
-  int col_1 = 160; int col_2 = 220;
-  for (int j = row_1; j < row_2; ++j) {
-    for (int k = col_1; k < col_2; ++k) {
-      sharedVisibilityField_(j, k) = 0;
-      sharedSpeedField_(j, k) = speedValue_;
-    }
-  }
- 
   if (!sharedConfig_->silent) {
     std::cout << "########################### Environment output ############################ \n" 
       << "Generated new environment based on parsed settings at a seed value of: " << seedValue << std::endl;
