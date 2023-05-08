@@ -21,36 +21,6 @@ struct Node {
   }
 };
 
-struct BucketStats {
-  size_t occupied = 0;
-  size_t total_collisions = 0;
-  size_t max_collisions = 0;
-
-  BucketStats(std::unordered_map<size_t, double> const& c) {
-    for(auto bucket = c.bucket_count(); bucket--;) {
-      auto bucket_size = c.bucket_size(bucket);
-      occupied += bucket_size > 0;
-      if(bucket_size > 1) {
-        auto collisions = bucket_size - 1;
-        total_collisions += collisions;
-        max_collisions = std::max(max_collisions, collisions);
-      }
-    }
-  }
-
-  double avg_collisions() const {
-    return occupied ? static_cast<double>(total_collisions) / occupied : 0;
-  }
-
-  friend std::ostream& operator<<(std::ostream& s, BucketStats const& b) {
-    return s
-      << "used buckets: " << b.occupied
-      << "; total collisions: " << b.total_collisions
-      << "; max collisions in a bucket: " << b.max_collisions
-      << "; avg collisions per bucket: " << b.avg_collisions();
-  }
-};
-
 class solver {
  public:
 
@@ -83,15 +53,6 @@ private:
         size_t y = index % ncols_;
         size_t x = (index - y) / ncols_;
         return {x, y};
-    }
-
-    static size_t xorshift(const size_t& n, int i){
-      return n^(n>>i);
-    }
-    static size_t hash(const size_t& n){
-      size_t p = 0x5555555555555555ull; // pattern of alternating 0 and 1
-      size_t c = 17316035218449499591ull;// random uneven integer constant; 
-      return c*xorshift(p*xorshift(n,32),32);
     }
 
     /*!
@@ -238,8 +199,6 @@ private:
     int nb_of_iterations_ = 0;
     size_t nb_of_sources_ = 0;
 
-    // ((x * ncols + y) * max_num + index) % (nrows * ncols * max_num)
-
     // Neighbours
     // [1 0; 0 1; -1 0; 0 -1; 1 1; -1 1; -1 -1; 1 -1] flattened out
     const int neighbours_[16] = {1, 0, 0, 1, -1, 0, 0, -1, 1, 1, -1, 1, -1, -1, 1, -1};
@@ -264,8 +223,6 @@ private:
 
     // Unique pointer to image holder
     std::unique_ptr<sf::Image> uniqueLoadedImage_;
-
-    static const size_t max_num = 1610612741;
 };
 
 } // namespace vbs
