@@ -12,9 +12,10 @@
         "${workspaceFolder}\\src\\*.cpp",
         "-lsfml-graphics",
         "-o",
-        "${workspaceFolder}\\visibility_based_global_path_planner.exe",
+        "${workspaceFolder}\\vbs.exe",
         "-I",
-        "${workspaceFolder}\\include"
+        "${workspaceFolder}\\include",
+        "-D_USE_MATH_DEFINES",
       ],
       "options": {
         "cwd": "${fileDirname}"
@@ -43,13 +44,12 @@
         "-fassociative-math",
         "-frename-registers",
         "-ftracer",
-        "-fprofile-use",
         "-ftree-vectorize",
         "-fomit-frame-pointer",
         "-flto",
         "-std=c++20",
         "-o",
-        "${workspaceFolder}\\visibility_based_global_path_planner.exe",
+        "${workspaceFolder}\\vbs.exe",
         "${workspaceFolder}\\src\\*.cpp",
         "-lsfml-graphics",
         "-I",
@@ -59,7 +59,8 @@
         "-Wpedantic",
         "-Wshadow",
         "-Wformat=2",
-        "-Wnull-dereference"
+        "-Wnull-dereference",
+        "-D_USE_MATH_DEFINES",
       ],
       "options": {
         "cwd": "${fileDirname}"

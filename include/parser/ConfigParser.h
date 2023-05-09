@@ -10,8 +10,8 @@ using size_t = std::size_t;
 
 struct Config {
     int mode = 1;
-    size_t nrows = 100;
     size_t ncols = 100;
+    size_t nrows = 100;
     int nb_of_obstacles = 10;
     size_t minWidth = 10;
     size_t maxWidth = 20;

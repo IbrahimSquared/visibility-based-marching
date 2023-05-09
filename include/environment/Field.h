@@ -11,10 +11,10 @@ class Field {
  public:
   using size_t = std::size_t;
   // Default constructor
-  Field() : nrows_(0), ncols_(0), size_(0), data_(nullptr) {}
+  Field() : ncols_(0), nrows_(0), size_(0), data_(nullptr) {}
 
   // Constructor with specified dimensions and initial value
-  Field(size_t nrows, size_t ncols, T default_value) : nrows_{nrows}, ncols_{ncols}, size_{nrows * ncols} {
+  Field(size_t ncols, size_t nrows, T default_value) : ncols_{ncols}, nrows_{nrows}, size_{ncols * nrows} {
     if constexpr (unique == 0)
       data_ = std::make_unique<T[]>(size_);
     else
@@ -24,8 +24,8 @@ class Field {
 
   // Copy constructor
   Field(const Field& other)
-    : nrows_(other.nrows_),
-      ncols_(other.ncols_),
+    : ncols_(other.ncols_),
+      nrows_(other.nrows_),
       size_(other.size_),
       data_(other.data_) // Copy the ptr instead of the data
   {}
@@ -41,30 +41,31 @@ class Field {
       // Update this object's data_ pointer to the new data array
       data_ = std::move(new_data);
       // Copy other's metadata to this object's metadata
-      nrows_ = other.nrows_;
       ncols_ = other.ncols_;
+      nrows_ = other.nrows_;
       size_ = other.size_;
     }
     return *this;
   }
 
   // Access methods
-  inline T& operator()(size_t y, size_t x) { return data_[y * ncols_ + x]; }
-  inline const T& operator()(size_t y, size_t x) const { return data_[y * ncols_ + x]; }
+  // xth row, yth column - row-major order
+  inline T& operator()(size_t y, size_t x) { return data_[x * ncols_ + y]; }
+  inline const T& operator()(size_t y, size_t x) const { return data_[x * ncols_ + y]; }
     
   void fill(T value) {
     for (size_t i = 0; i < size_; ++i)
         data_[i] = value;
   }
-    
-  size_t nrows() const { return nrows_; }
+  
   size_t ncols() const { return ncols_; }
+  size_t nrows() const { return nrows_; }
   size_t size() const { return size_; }
   const auto& data() const { return data_; }
 
 private:
-  size_t nrows_;
   size_t ncols_;
+  size_t nrows_;
   size_t size_;
   std::conditional_t<unique == 0, std::unique_ptr<T[]>, std::shared_ptr<T[]>> data_;
 };

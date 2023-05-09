@@ -48,15 +48,15 @@ bool ConfigParser::parse(const std::string& filename) {
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
       }
-    } else if (key == "nrows") {
-      try {
-        config_.nrows = std::stoul(value);
-      } catch (...) {
-        std::cerr << "Invalid value for " << key << ": " << value << '\n';
-      }
     } else if (key == "ncols") {
       try {
         config_.ncols = std::stoul(value);
+      } catch (...) {
+        std::cerr << "Invalid value for " << key << ": " << value << '\n';
+      }
+    } else if (key == "nrows") {
+      try {
+        config_.nrows = std::stoul(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
       }
@@ -276,8 +276,8 @@ bool ConfigParser::parse(const std::string& filename) {
     if (config_.mode == 1) {
       std::cout << "Random environment mode" << std::endl;
       std::cout << "########################### Environment settings ########################## \n"
-        << "nrows: " << config_.nrows << "\n"
         << "ncols: " << config_.ncols << "\n"
+        << "nrows: " << config_.nrows << "\n"
         << "Nb of obstacles: " << config_.nb_of_obstacles << "\n"
         << "Min width: " << config_.minWidth << "\n"
         << "Max width: " << config_.maxWidth << "\n"

@@ -30,9 +30,8 @@
             "compilerPath": "C:\\Workdir\\Programs\\msys64\\mingw64\\bin\\gcc.exe",
             "cStandard": "gnu17",
             "cppStandard": "gnu++20",
-            "intelliSenseMode": "windows-gcc-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "intelliSenseMode": "windows-gcc-x64"
         }
     ],
     "version": 4
-}
+  }

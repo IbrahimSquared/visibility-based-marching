@@ -25,7 +25,6 @@ class solver {
  public:
 
   using Map = ska::flat_hash_map<size_t, double>;
-  // using Map = std::unordered_map<size_t, double>; // , std::hash<size_t>>;
   using point = std::pair<size_t, size_t>;
 
   solver(environment& env);
@@ -40,18 +39,14 @@ class solver {
 
   // Get global iterator (number of iterations that had to be completed)
   inline int getNbOfIterations() const { return nb_of_iterations_; };
-  // Get hashmap load factor - measure of badness of a hashmap
-  inline double getLoadFactor() const { return visibilityHashMap_.load_factor(); };
 
 private:
-    std::vector<std::pair<size_t, size_t>> getPointsBetween(int x1, int y1, int x2, int y2) const;
-
     void reset();
     void reconstructPath(const Node& current, const std::string& methodName);
-    inline int indexAt(const size_t x, const size_t y) const { return x * ncols_ + y; };
+    inline int indexAt(const size_t x, const size_t y) const { return x + ncols_ * y; };
     inline point coordinatesAt(size_t index) const {
-        size_t y = index % ncols_;
-        size_t x = (index - y) / ncols_;
+        size_t x = index % ncols_;
+        size_t y = (index) / ncols_;
         return {x, y};
     }
 

@@ -13,6 +13,7 @@ int main() {
 
   // Initialize environment
   environment env = environment(config);
+
   // Initialize solver & solve
   solver sol = solver(env);
   if (config.vstar) {

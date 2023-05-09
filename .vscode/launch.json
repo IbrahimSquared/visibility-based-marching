@@ -4,7 +4,7 @@
       "name": "C/C++: g++.exe build - debug",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}\\visibility_based_global_path_planner.exe",
+      "program": "${workspaceFolder}\\vbs.exe",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",

@@ -12,17 +12,17 @@ namespace vbs {
 solver::solver(environment& env) : sharedConfig_(env.getConfig()) {
   sharedVisibilityField_ = env.getVisibilityField();
   sharedSpeedField_ = env.getSpeedField();
-  nrows_ = sharedVisibilityField_.nrows();
   ncols_ = sharedVisibilityField_.ncols();
+  nrows_ = sharedVisibilityField_.nrows();
   visibilityThreshold_ = sharedConfig_->visibilityThreshold;
 
   // Init environment image
   uniqueLoadedImage_.reset(std::make_unique<sf::Image>().release());
-  uniqueLoadedImage_->create(nrows_, ncols_, sf::Color::Black);
+  uniqueLoadedImage_->create(ncols_, nrows_, sf::Color::Black);
   sf::Color color;
   color.a = 1;
-  for (size_t i = 0; i < nrows_; ++i) {
-    for (size_t j = 0; j < ncols_; ++j) {
+  for (size_t i = 0; i < ncols_; ++i) {
+    for (size_t j = 0; j < nrows_; ++j) {
       if (sharedVisibilityField_(i,j) < 1) {
         uniqueLoadedImage_->setPixel(i, j, color.Black);
       } else {
@@ -39,19 +39,19 @@ solver::solver(environment& env) : sharedConfig_(env.getConfig()) {
 /******************************************************************************************************/
 /******************************************************************************************************/
 void solver::reset() {
-  gScore_ = Field<double, 0>(nrows_, ncols_, INFINITY);
-  fScore_ = Field<double, 0>(nrows_, ncols_, INFINITY);
-  cameFrom_ = Field<size_t, 0>(nrows_, ncols_, 0);
-  inOpenSet_ = Field<bool, 0>(nrows_, ncols_, false);
-  isUpdated_ = Field<bool, 0>(nrows_, ncols_, false);
-  lightSources_.reset(new point[nrows_ * ncols_]);
+  gScore_ = Field<double, 0>(ncols_, nrows_, INFINITY);
+  fScore_ = Field<double, 0>(ncols_, nrows_, INFINITY);
+  cameFrom_ = Field<size_t, 0>(ncols_, nrows_, 0);
+  inOpenSet_ = Field<bool, 0>(ncols_, nrows_, false);
+  isUpdated_ = Field<bool, 0>(ncols_, nrows_, false);
+  lightSources_.reset(new point[ncols_ * nrows_]);
 
   visibilityHashMap_.clear();
   openSet_.reset();
 
   // Reserve openSet_
   std::vector<Node> container;
-  container.reserve(nrows_*ncols_);
+  container.reserve(ncols_*nrows_);
   std::priority_queue<Node, std::vector<Node>, std::less<Node>> heap(std::less<Node>(), std::move(container));
   openSet_ = std::make_unique<std::priority_queue<Node>>(heap); 
 
@@ -59,7 +59,7 @@ void solver::reset() {
   nb_of_iterations_ = 0;
   
   // Reserve hash map
-  visibilityHashMap_.reserve(nrows_ * ncols_ * 2);
+  visibilityHashMap_.reserve(ncols_ * nrows_ * 2);
 }
 
 /******************************************************************************************************/
@@ -76,7 +76,7 @@ void solver::visibilityBasedSolver() {
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
-    x = initial_frontline[i]; y = initial_frontline[i+1];
+    x = initial_frontline[i]; y = nrows_ - 1 - initial_frontline[i+1];
     d = 0;
     gScore_(x, y) = d;
     isUpdated_(x, y) = true;
@@ -108,7 +108,7 @@ void solver::visibilityBasedSolver() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= nrows_ || neighbour_y >= ncols_) { continue; };
+      if (neighbour_x >= ncols_ || neighbour_y >= nrows_) { continue; };
       if (isUpdated_(neighbour_x, neighbour_y)) { continue; };
       if (sharedVisibilityField_(neighbour_x, neighbour_y) < 1) {
         if (sharedConfig_->expandInObstacles) {
@@ -170,12 +170,12 @@ void solver::vStarSearch() {
   double g = 0, h = 0, f = 0;
   int x = 0, y = 0, neighbour_x = 0, neighbour_y = 0;
   int endX = sharedConfig_->target_x;
-  int endY = sharedConfig_->target_y;
+  int endY = nrows_ - 1 - sharedConfig_->target_y;
 
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
-    x = initial_frontline[i]; y = initial_frontline[i+1];
+    x = initial_frontline[i]; y = nrows_ - 1 - initial_frontline[i+1];
     g = 0; h = 0;
     if (sharedConfig_->greedy) { h = evaluateDistance(x, y, endX, endY); }
     f = g + h;
@@ -225,7 +225,7 @@ void solver::vStarSearch() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= nrows_ || neighbour_y >= ncols_) { continue; };
+      if (neighbour_x >= ncols_ || neighbour_y >= nrows_) { continue; };
       if (isUpdated_(neighbour_x, neighbour_y)) { continue; };
       if (sharedVisibilityField_(neighbour_x, neighbour_y) < 1) {
         cameFrom_(neighbour_x, neighbour_y) = cameFrom_(x, y);
@@ -286,12 +286,12 @@ void solver::aStarSearch() {
   double g = 0, h = 0, f = 0;
   int x = 0, y = 0, neighbour_x = 0, neighbour_y = 0;
   int endX = sharedConfig_->target_x;
-  int endY = sharedConfig_->target_y;
+  int endY = nrows_ - 1 - sharedConfig_->target_y;
 
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
-    x = initial_frontline[i]; y = initial_frontline[i+1];
+    x = initial_frontline[i]; y = nrows_ - 1 - initial_frontline[i+1];
     g = 0; h = 0;
     if (sharedConfig_->greedy) { h = evaluateDistance(x, y, endX, endY); }
     f = g + h;
@@ -333,7 +333,7 @@ void solver::aStarSearch() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= nrows_ || neighbour_y >= ncols_ || neighbour_x < 0 || neighbour_y < 0) { continue; };
+      if (neighbour_x >= ncols_ || neighbour_y >= nrows_ || neighbour_x < 0 || neighbour_y < 0) { continue; };
       if (sharedVisibilityField_(neighbour_x, neighbour_y) < 1) { continue; }
 
       g = gScore_(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y); // neighbour_distances_[j];
@@ -372,8 +372,8 @@ void solver::computeDistanceFunction() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<int> initial_frontline;
-  for (size_t i = 0; i < nrows_; ++i) {
-    for (size_t j = 0; j < ncols_; ++j) {
+  for (size_t i = 0; i < ncols_; ++i) {
+    for (size_t j = 0; j < nrows_; ++j) {
       if (sharedVisibilityField_(i, j) <= visibilityThreshold_) {
         initial_frontline.push_back(i);
         initial_frontline.push_back(j);
@@ -420,7 +420,7 @@ void solver::computeDistanceFunction() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= nrows_ || neighbour_y >= ncols_) { continue; };
+      if (neighbour_x >= ncols_ || neighbour_y >= nrows_) { continue; };
       if (isUpdated_(neighbour_x, neighbour_y)) { continue; };
       
       potentialSources = queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
@@ -478,7 +478,7 @@ std::vector<size_t>& solver::queuePotentialSources(std::vector<size_t>& potentia
     potentialSource_x = neighbour_x + neighbours_[k];
     potentialSource_y = neighbour_y + neighbours_[k+1];
     // Box check
-    if (potentialSource_x >= nrows_ || potentialSource_y >= ncols_) { continue; };
+    if (potentialSource_x >= ncols_ || potentialSource_y >= nrows_) { continue; };
     if (!isUpdated_(potentialSource_x, potentialSource_y)) { continue; };
 
     lightSource_num = cameFrom_(potentialSource_x, potentialSource_y);
@@ -550,7 +550,7 @@ void solver::createNewPivot(const int x, const int y, const int neighbour_x, con
     pivot_neighbour_x = x + neighbours_[p];
     pivot_neighbour_y = y + neighbours_[p+1];
     // Box check
-    if (pivot_neighbour_x >= nrows_ || pivot_neighbour_y >= ncols_) { continue; }
+    if (pivot_neighbour_x >= ncols_ || pivot_neighbour_y >= nrows_) { continue; }
     // Update neighbour visibility
     updatePointVisibility(nb_of_sources_, x, y, pivot_neighbour_x, pivot_neighbour_y);
     visibilityHashMap_[pivot_neighbour_y + ncols_ * pivot_neighbour_x + nrows_ * ncols_ * nb_of_sources_] = visibilityHashMap_.at(pivot_neighbour_y + ncols_ * pivot_neighbour_x + nrows_ * ncols_ * nb_of_sources_);
@@ -783,8 +783,8 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
         return;
       }
       std::ostream& os = of;
-      for (size_t i = 0; i < nrows_; ++i) { 
-        for (size_t j = 0; j < ncols_; ++j) {
+      for (int j = nrows_ - 1; j >= 0; --j){
+        for (size_t i = 0; i < ncols_; ++i) {
           os << gScore_(i, j) << " "; 
         }
         os << "\n";
@@ -804,8 +804,8 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       return;
     }
     std::ostream& os = of;
-    for (size_t i = 0; i < nrows_; ++i) { 
-      for (size_t j = 0; j < ncols_; ++j) {
+    for (int j = nrows_ - 1; j >= 0; --j){
+      for (size_t i = 0; i < ncols_; ++i) {
         os << gScore_(i, j) << " "; 
       }
       os << "\n";
@@ -823,8 +823,8 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
         return;
       }
       std::ostream& os1 = of1;
-      for (size_t i = 0; i < nrows_; ++i) { 
-        for (size_t j = 0; j < ncols_; ++j) {
+      for (int j = nrows_ - 1; j >= 0; --j){
+        for (size_t i = 0; i < ncols_; ++i) {
           os1 << cameFrom_(i, j) << " "; 
         }
         os1 << "\n";
@@ -845,7 +845,7 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       }
       std::ostream& os = of3;
       for (size_t i = 0; i < nb_of_sources_; ++i) { 
-        os << lightSources_[i].first << " " << lightSources_[i].second ; 
+        os << lightSources_[i].first << " " << nrows_- 1 - lightSources_[i].second ; 
         os<< "\n";
       }
       of3.close();
@@ -866,7 +866,7 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
     }
     std::ostream& os = of;
     for (size_t i = 0; i < resultingPath.size(); ++i) { 
-      os << resultingPath[i].first << " " << resultingPath[i].second ; 
+      os << resultingPath[i].first << " " << nrows_ - 1 - resultingPath[i].second ; 
       os<< "\n";
     }
     of.close();
@@ -884,8 +884,8 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       return;
     }
     std::ostream& os = of1;
-    for (size_t i = 0; i < nrows_; ++i) { 
-      for (size_t j = 0; j < ncols_; ++j) {
+    for (int j = nrows_ - 1; j >= 0; --j){
+      for (size_t i = 0; i < ncols_; ++i) {
         os << gScore_(i, j) << " "; 
       }
       os << "\n";
@@ -905,8 +905,8 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       return;
     }
     std::ostream& os = of2;
-    for (size_t i = 0; i < nrows_; ++i) { 
-      for (size_t j = 0; j < ncols_; ++j) {
+    for (int j = nrows_ - 1; j >= 0; --j){
+      for (size_t i = 0; i < ncols_; ++i) {
         os << fScore_(i, j) << " "; 
       }
       os << "\n";
@@ -927,7 +927,7 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
     }
     std::ostream& os = of3;
     for (size_t i = 0; i < nb_of_sources_; ++i) { 
-      os << lightSources_[i].first << " " << lightSources_[i].second ; 
+      os << lightSources_[i].first << " " << nrows_ - 1 - lightSources_[i].second ; 
       os<< "\n";
     }
     of3.close();
