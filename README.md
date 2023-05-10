@@ -1,4 +1,4 @@
-# visibility-based-marching
+# Visibility-based Marching (VBM)
 Visibility-based marching methods is an exact wave propagation technique that has an O(n) compute and space complexity. Solves several shortcomings of SOTA marching methods and inherently produces globally optimal paths. <br>
 
 Sample marching in a couple of environments: <br>
