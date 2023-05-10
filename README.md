@@ -1,12 +1,24 @@
 # visibility-based-marching
 Visibility-based marching methods is an exact wave propagation technique that has an O(n) compute and space complexity. Solves several shortcomings of SOTA marching methods and inherently produces globally optimal paths. <br>
 
-Sample marching in a couple of environments. <br>
-![alt text](https://github.com/IbrahimSquared/visibility-heuristic-path-planner/blob/main/Samples/visibility_polygon_5_threshold.jpg) <br>
+Sample marching in a couple of environments: <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/euclidean.png) <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/AcrossTheCape.png) <br>
 
+Sample marching of different distance functions: <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/chessboard.png) <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/cityblock.png) <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/cubic.png) <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/quasiEuclidean.png) <br>
 
+Sample marching starting from multiple sources: <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/multiple_sources.png) <br>
 
-Uses an underlying visibility algorithm that can compute visibility polygons as shown below. <br>
+Sample ESDF computation using VBM: <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/ESDF.png) <br>
+
+VBM relies on an underlying visibility algorithm that computes visibility as shown below. <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/visibility_polygon.jpg) <br>
 
 Please read how to compile/build the C++ files first below. <br>
 
