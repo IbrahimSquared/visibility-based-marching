@@ -9,7 +9,7 @@ for iFig = 1:numel(FigList)
     end
 end
 
-% system('vbs.bat');
+system('vbs.bat');
 
 %% Parser - parse settings
 % Open the file for reading
@@ -120,14 +120,14 @@ if settings.saveResults
         set(gca, 'ytick', [-1e6 1e6]);
         set(gca, 'ztick', [-1e6 1e6]);
         set(gca,'LooseInset',get(gca,'TightInset'));
-
-        plot3(ep_o(1), ep_o(2), visibilityBased(ep_o(2), ep_o(1))+50,'o',...
-            'MarkerFaceColor','red', 'MarkerEdgeColor','black',...
-            'MarkerSize', 24, 'LineWidth', 1)
-
-        plot3(sp_o(1), sp_o(2), visibilityBased(sp_o(2), sp_o(1))+50,'o',...
-            'MarkerFaceColor','green', 'MarkerEdgeColor','black',...
-            'MarkerSize', 24, 'LineWidth', 1)
+       
+        for i = 1:2:length(settings.initialFrontline)
+            piv = [settings.initialFrontline(i), settings.initialFrontline(i+1)] + 1;
+            plot3(piv(1), piv(2), visibilityBased(piv(2), piv(1))+50,'o',...
+                'MarkerFaceColor','green', 'MarkerEdgeColor','black',...
+                'MarkerSize', 24, 'LineWidth', 1)
+        end
+        
         
         % Plot light sources/pivots
         if settings.saveLightSources
@@ -152,19 +152,21 @@ if settings.saveResults
         if settings.saveCameFrom && settings.saveLightSources
             if true 
                 pt = ep_o;
-                points = [pt];
-                while true
-                    if pt(1) == sp_o(1) && pt(2) == sp_o(2)
-                        break
+                if (ep_o(1) <= nx && ep_o(2) <= ny) 
+                    points = [pt];
+                    while true
+                        if pt(1) == sp_o(1) && pt(2) == sp_o(2)
+                            break
+                        end
+                        pt = visibilityBased_lightSources(visibilityBased_cameFrom(pt(2), pt(1)), :);
+                        points(end+1, :) = pt;
+    
+                        line([points(end,1),points(end-1,1)],...
+                            [points(end,2),points(end-1,2)], ...
+                            [visibilityBased(points(end,2), points(end,1))+1e2 ...
+                             visibilityBased(points(end-1,2),points(end-1,1))+1e2],...
+                            'LineWidth', 4, "color", "magenta")
                     end
-                    pt = visibilityBased_lightSources(visibilityBased_cameFrom(pt(2), pt(1)), :);
-                    points(end+1, :) = pt;
-
-                    line([points(end,1),points(end-1,1)],...
-                        [points(end,2),points(end-1,2)], ...
-                        [visibilityBased(points(end,2), points(end,1))+1e2 ...
-                         visibilityBased(points(end-1,2),points(end-1,1))+1e2],...
-                        'LineWidth', 4, "color", "magenta")
                 end
             end
         end
