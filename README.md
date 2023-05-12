@@ -5,7 +5,7 @@ Sample marching in a couple of environments: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/euclidean.png) <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/AcrossTheCape.png) <br>
 Huge 3201x3201 maze VBM: <br>
-![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/test_huge_maze.jpg) <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/test_huge_maze.png) <br>
 
 Sample marching of different distance functions: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/chessboard.png) <br>
