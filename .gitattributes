@@ -1,5 +1,5 @@
 *.h linguist-language=C++
 *.cpp linguist-language=C++
 
-fast_marching/* export-ignore
-expfig/* export-ignore
+fast_marching/* linguist-vendored
+expfig/* linguist-vendored
