@@ -37,7 +37,7 @@ If you open the image in Paint for example, the (1,1) pixel coordinate is the to
 Note that initialFrontline in settings.config has the form {x1, y1, x2, y2, x3, y3...}, where x and y are the coordinates of starting positions.
 
 # MATLAB interface for reading output and generating plots/visualizations
-To interface with MATLAB, the code interface.m calls vbs.exe (visibility based solver) using vbs.bat, where the components of the .bat file are: <br>
+To interface with MATLAB, the code interface_MATLAB.m calls vbs.exe (visibility based solver) using vbs.bat, where the components of the .bat file are: <br>
 ``` set path=%path:C:\Program Files\MATLAB\R2022b\bin\win64;=% ``` <br>
 ``` vbs.exe ``` <br>
 Make sure to change the path for your MATLAB installation directory inside the .bat (and use the proper version). <br>

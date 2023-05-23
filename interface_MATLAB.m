@@ -493,6 +493,37 @@ if settings.msfm && settings.saveResults && settings.saveVisibilityField
     set(gca,'LooseInset',get(gca,'TightInset'));
 end
 
+%% Test
+% Q = 1./distanceFunction; % .* visibilityBased;
+% figure(10);
+% set(gcf, 'Name', 'Visibility-based solver')
+% clf
+% m = mesh(Q,'FaceLighting','phong','FaceColor','interp',...
+%     'AmbientStrength',1.0, 'EdgeColor', 'interp','FaceAlpha','1.0');
+% colormap(jet)
+% 
+% % minimum = min(min(Q));
+% % maximum = max(max(Q));
+% 
+% % Q(Q == 0) = maximum;
+% 
+% [nx, ny] = size(Q);
+% 
+% % caxis([0 150])
+% % zlim([0 150])
+% view(0,90)
+% % axis equal
+% axis([1 ny 1 nx])
+% % hold on
+% % contour3(Q+1, linspace(minimum, maximum, 40), 'LineWidth', 3,...
+% %         'EdgeColor', 'k');
+% 
+% grid off
+% set(gca, 'xtick', [-1e6 1e6]);
+% set(gca, 'ytick', [-1e6 1e6]);
+% set(gca, 'ztick', [-1e6 1e6]);
+% set(gca,'LooseInset',get(gca,'TightInset'));
+
 %% Expfig  - sample usage
 % addpath(genpath('expfig'))
 % export_fig test_image -r250 -transparent -png
