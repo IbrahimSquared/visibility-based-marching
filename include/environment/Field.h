@@ -18,7 +18,13 @@ class Field {
     if constexpr (unique == 0)
       data_ = std::make_unique<T[]>(size_);
     else
-      data_ = std::make_shared<T[]>(size_);
+      // data_ = std::make_shared<T[]>(size_); C++20
+      // data_ = std::shared_ptr<T[]>(new T[size_], std::default_delete<T[]>()); C++ 11
+      #if __cplusplus > 201703L // Check if C++20 or later
+        data_ = std::make_shared<T[]>(size_);
+      #else // C++11 or earlier
+        data_ = std::shared_ptr<T[]>(new T[size_], std::default_delete<T[]>());
+      #endif
     fill(default_value);
   }
 
