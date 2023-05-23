@@ -44,7 +44,7 @@ Make sure to change the path for your MATLAB installation directory inside the .
 The code then parses the settings and reads the results and plots them nicely.
 
 # Octave interface
-Similar to MATLAB interface, provided by @peter-ap.
+Similar to MATLAB interface, provided by [@peter-ap](https://github.com/peter-ap).
 
 # Instructions to build the C++ code on Windows in Visual Studio Code
 We provide tasks.json, c_cpp_properties.json, and launch.json for building and launching the code in Visual Studio Code. <br>
