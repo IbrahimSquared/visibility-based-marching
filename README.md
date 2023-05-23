@@ -43,6 +43,9 @@ To interface with MATLAB, the code interface_MATLAB.m calls vbs.exe (visibility 
 Make sure to change the path for your MATLAB installation directory inside the .bat (and use the proper version). <br>
 The code then parses the settings and reads the results and plots them nicely.
 
+# Octave interface
+Similar to MATLAB interface, provided by @peter-ap.
+
 # Instructions to build the C++ code on Windows in Visual Studio Code
 We provide tasks.json, c_cpp_properties.json, and launch.json for building and launching the code in Visual Studio Code. <br>
 Make sure to change the compiler path in tasks.json for both debug and release modes: <br>
