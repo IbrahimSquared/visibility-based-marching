@@ -30,7 +30,6 @@ solver::solver(environment& env) : sharedConfig_(env.getConfig()) {
       }
     }
   }
-
   // Init maps
   reset();
 }
@@ -564,124 +563,147 @@ void solver::createNewPivot(const int x, const int y, const int neighbour_x, con
 /******************************************************************************************************/
 /******************************************************************************************************/
 void solver::updatePointVisibility(const size_t lightSourceNumber, const int lightSource_x, const int lightSource_y, const int x, const int y) {
+  // Variable initialization
   double v = 0;
   double c = 0;
-  double offset = 0;
+
+  // Check if visibility value already exists
+  size_t key = y + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+  if (visibilityHashMap_.count(key)) {
+    return;
+  }
+
   if (x == lightSource_x) {
     if (y - lightSource_y > 0) { 
-      if (!visibilityHashMap_.count((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber)) {
+      key = (y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+      if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y-1);
       } 
-      v = visibilityHashMap_.at((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber);
+      v = visibilityHashMap_.at(key);
     } else {
-      if (!visibilityHashMap_.count((y+1) + ncols_ * (x) + nrows_ * ncols_ * lightSourceNumber)) {
+      key = y+1 + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;;
+      if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y+1);
       } 
-      v = visibilityHashMap_.at((y+1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber);
+      v = visibilityHashMap_.at(key);
     }
   } else if (y == lightSource_y) {
-      if (x - lightSource_x > 0) { 
-        if (!visibilityHashMap_.count(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y);
-        } 
-      v = visibilityHashMap_.at(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber);
+    if (x - lightSource_x > 0) { 
+      key = y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+      if (!visibilityHashMap_.count(key)) {
+        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y);
+      } 
+      v = visibilityHashMap_.at(key);
     } else {
-      if (!visibilityHashMap_.count(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber)) {
+      key = y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+      if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y);
       } 
-      v = visibilityHashMap_.at(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber);
+      v = visibilityHashMap_.at(key);
     }
   } else {
     // Q1
     if ((x - lightSource_x > 0) && (y - lightSource_y > 0)) {
-      if (!visibilityHashMap_.count((y-1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber)) {
+      key = (y-1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+      if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y-1);
       }
       if (x - lightSource_x == y - lightSource_y) {
-        v = visibilityHashMap_.at((y-1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber);
+        v = visibilityHashMap_.at(key);
       } else if (x - lightSource_x < y - lightSource_y) {
-        if (!visibilityHashMap_.count((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_1 = (y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y-1);
         }
-        c = (double)(x - lightSource_x + offset) / (y - lightSource_y + offset);
-        v = visibilityHashMap_.at((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y-1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(x - lightSource_x) / (y - lightSource_y);
+        double v1 = visibilityHashMap_.at(key_1);
+        v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (x - lightSource_x > y - lightSource_y) {
-        if (!visibilityHashMap_.count(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_2 = y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y);
         }
-        c = (double)(y - lightSource_y + offset) / (x - lightSource_x + offset);
-        v = visibilityHashMap_.at(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y-1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(y - lightSource_y) / (x - lightSource_x);
+        double v2 = visibilityHashMap_.at(key_2);
+        v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     } 
     // Q2
-    else if ((x - lightSource_x > 0) && (y - lightSource_y < 0)) { 
-      if (!visibilityHashMap_.count((y+1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber)) {
+    else if ((x - lightSource_x > 0) && (y - lightSource_y < 0)) {
+      key = (y+1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+      if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y+1);
       }
       if (x - lightSource_x == lightSource_y - y) {
-        v = visibilityHashMap_.at((y+1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber);
+        v = visibilityHashMap_.at(key);
       } else if (x - lightSource_x < lightSource_y - y) {
-        if (!visibilityHashMap_.count((y+1) + ncols_ * (x) + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_1 = y+1 + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y+1);
         }
-        c = (double)(x - lightSource_x + offset) / (lightSource_y - y + offset);
-        v = visibilityHashMap_.at((y+1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at((y+1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y+1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(x - lightSource_x) / (lightSource_y - y);
+        double v1 = visibilityHashMap_.at(key_1);
+        v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (x - lightSource_x > lightSource_y - y) {
-        if (!visibilityHashMap_.count(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_2 = y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y);
         }
-        c = (double)(lightSource_y - y + offset) / (x - lightSource_x + offset);
-        v = visibilityHashMap_.at(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at(y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y+1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(lightSource_y - y) / (x - lightSource_x);
+        double v2 = visibilityHashMap_.at(key_2);
+        v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     } 
     // Q3
     else if ((x - lightSource_x < 0) && (y - lightSource_y < 0)) {
-      if (!visibilityHashMap_.count((y+1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber)) {
+      key = (y+1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+      if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y+1);
       }
       if (lightSource_x - x == lightSource_y - y) {
-        v = visibilityHashMap_.at((y+1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber);
+        v = visibilityHashMap_.at(key);
       } else if (lightSource_x - x < lightSource_y - y) {
-        if (!visibilityHashMap_.count((y+1) + ncols_ * (x) + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_1 = (y+1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y+1);
         }
-        c = (double)(lightSource_x - x + offset) / (lightSource_y - y + offset);
-        v = visibilityHashMap_.at((y+1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at((y+1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y+1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(lightSource_x - x) / (lightSource_y - y);
+        double v1 = visibilityHashMap_.at(key_1);
+        v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (lightSource_x - x > lightSource_y - y) {
-        if (!visibilityHashMap_.count(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_2 = y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y);
         }
-        c = (double)(lightSource_y - y + offset) / (lightSource_x - x + offset);
-        v = visibilityHashMap_.at(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y+1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(lightSource_y - y) / (lightSource_x - x);
+        double v2 = visibilityHashMap_.at(key_2);
+        v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     } 
     // Q4
     else if ((x - lightSource_x < 0) && (y - lightSource_y > 0)) {
-      if (!visibilityHashMap_.count((y-1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber)) {
+      key = (y-1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+      if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y-1);
       }
       if (lightSource_x - x == y - lightSource_y) {
-        v = visibilityHashMap_.at((y-1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber);
+        v = visibilityHashMap_.at(key);
       } else if (lightSource_x - x < y - lightSource_y) {
-        if (!visibilityHashMap_.count((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_1 = (y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y-1);
         }
-        c = (double)(lightSource_x - x + offset) / (y - lightSource_y + offset);
-        v = visibilityHashMap_.at((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at((y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y-1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(lightSource_x - x) / (y - lightSource_y);
+        double v1 = visibilityHashMap_.at(key_1);
+        v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (lightSource_x - x > y - lightSource_y) {
-        if (!visibilityHashMap_.count(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber)) {
+        const size_t key_2 = y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+        if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y);
         }
-        c = (double)(y - lightSource_y + offset) / (lightSource_x - x + offset);
-        v = visibilityHashMap_.at(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber) - 
-          c * (visibilityHashMap_.at(y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber) - visibilityHashMap_.at((y-1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber));
+        c = static_cast<double>(y - lightSource_y) / (lightSource_x - x);
+        double v2 = visibilityHashMap_.at(key_2);
+        v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
   }
