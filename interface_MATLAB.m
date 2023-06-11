@@ -99,11 +99,16 @@ if settings.saveResults
         m = mesh(visibilityBased,'FaceLighting','phong','FaceColor','interp',...
             'AmbientStrength',1.0, 'EdgeColor', 'interp','FaceAlpha','1.0');
         colormap(jet)
-
+        
         minimum = min(min(visibilityBased));
         maximum = max(max(visibilityBased));
-
-        visibilityBased(visibilityBased == 0) = maximum;
+%         visibilityBased_ = visibilityBased;
+%         visibilityBased(visibilityBased == 0) = maximum;
+        
+        for i = 1:2:length(settings.initialFrontline)
+            piv = [settings.initialFrontline(i), settings.initialFrontline(i+1)] + 1;
+            visibilityBased(piv(1), piv(2)) = 0;
+        end
 
         [nx, ny] = size(visibilityBased);
 
@@ -123,9 +128,9 @@ if settings.saveResults
        
         for i = 1:2:length(settings.initialFrontline)
             piv = [settings.initialFrontline(i), settings.initialFrontline(i+1)] + 1;
-            plot3(piv(1), piv(2), visibilityBased(piv(2), piv(1))+50,'o',...
+            plot3(piv(1), piv(2), visibilityBased(piv(1), piv(2))+50,'o',...
                 'MarkerFaceColor','green', 'MarkerEdgeColor','black',...
-                'MarkerSize', 24, 'LineWidth', 1)
+                'MarkerSize', 24, 'LineWidth', 3)
         end
         
         
@@ -152,6 +157,9 @@ if settings.saveResults
         if settings.saveCameFrom && settings.saveLightSources
             if true 
                 pt = ep_o;
+                plot3(ep_o(1), ep_o(2), visibilityBased(ep_o(2), ep_o(1))+50,'o',...
+                      'MarkerFaceColor','red', 'MarkerEdgeColor','black',...
+                      'MarkerSize', 24, 'LineWidth', 3)
                 if (ep_o(1) <= nx && ep_o(2) <= ny) 
                     points = [pt];
                     while true
@@ -160,11 +168,11 @@ if settings.saveResults
                         end
                         pt = visibilityBased_lightSources(visibilityBased_cameFrom(pt(2), pt(1)), :);
                         points(end+1, :) = pt;
-    
+                        
                         line([points(end,1),points(end-1,1)],...
                             [points(end,2),points(end-1,2)], ...
-                            [visibilityBased(points(end,2), points(end,1))+1e2 ...
-                             visibilityBased(points(end-1,2),points(end-1,1))+1e2],...
+                            [visibilityBased(points(end,2), points(end,1))+10 ...
+                             visibilityBased(points(end-1,2), points(end-1,1))+10],...
                             'LineWidth', 4, "color", "magenta")
                     end
                 end
