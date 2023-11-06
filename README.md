@@ -48,7 +48,9 @@ Similar to MATLAB interface, provided by [@peter-ap](https://github.com/peter-ap
 
 # Instructions to build the C++ code on Windows in Visual Studio Code
 We provide tasks.json, c_cpp_properties.json, and launch.json for building and launching the code in Visual Studio Code. <br>
-We tested with gcc MINGW64 MSYS2 compliler. Make sure to change the compiler path in tasks.json for both debug and release modes: <br>
+We tested with gcc MINGW64 MSYS2 compiler: <br>
+``` pacman -S mingw-w64-x86_64-gcc ``` <br>
+Make sure to change the compiler path in tasks.json for both debug and release modes: <br>
 ``` "command": "C:\\Workdir\\Programs\\msys64\\mingw64\\bin\\g++.exe" ```
 The tasks.json automatically links the SFML libraries with the argument ``` "-lsfml-graphics" ```. <br>
 For debug purposes, change "miDebuggerPath": "C:\\Workdir\\Programs\\msys64\\mingw64\\bin\\gdb.exe" path as well in launch.json. <br>
