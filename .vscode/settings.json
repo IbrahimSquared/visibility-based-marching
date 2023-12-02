@@ -80,7 +80,10 @@
         "codecvt": "cpp",
         "hash_map": "cpp",
         "future": "cpp",
-        "bitset": "cpp"
+        "bitset": "cpp",
+        "charconv": "cpp",
+        "format": "cpp",
+        "span": "cpp"
     },
     "todo-tree.highlights.defaultHighlight": {
         "icon": "alert",
