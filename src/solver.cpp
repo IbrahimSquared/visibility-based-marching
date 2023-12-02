@@ -12,18 +12,18 @@ namespace vbs {
 solver::solver(environment& env) : sharedConfig_(env.getConfig()) {
   sharedVisibilityField_ = env.getVisibilityField();
   sharedSpeedField_ = env.getSpeedField();
-  ncols_ = sharedVisibilityField_.ncols();
-  nrows_ = sharedVisibilityField_.nrows();
+  nx_ = sharedVisibilityField_->nx();
+  ny_ = sharedVisibilityField_->ny();
   visibilityThreshold_ = sharedConfig_->visibilityThreshold;
 
   // Init environment image
   uniqueLoadedImage_.reset(std::make_unique<sf::Image>().release());
-  uniqueLoadedImage_->create(ncols_, nrows_, sf::Color::Black);
+  uniqueLoadedImage_->create(nx_, ny_, sf::Color::Black);
   sf::Color color;
   color.a = 1;
-  for (size_t i = 0; i < ncols_; ++i) {
-    for (size_t j = 0; j < nrows_; ++j) {
-      if (sharedVisibilityField_(i,j) < 1) {
+  for (size_t i = 0; i < nx_; ++i) {
+    for (size_t j = 0; j < ny_; ++j) {
+      if (sharedVisibilityField_->get(i,j) < 1) {
         uniqueLoadedImage_->setPixel(i, j, color.Black);
       } else {
         uniqueLoadedImage_->setPixel(i, j, color.White);
@@ -38,19 +38,20 @@ solver::solver(environment& env) : sharedConfig_(env.getConfig()) {
 /******************************************************************************************************/
 /******************************************************************************************************/
 void solver::reset() {
-  gScore_ = Field<double, 0>(ncols_, nrows_, INFINITY);
-  fScore_ = Field<double, 0>(ncols_, nrows_, INFINITY);
-  cameFrom_ = Field<size_t, 0>(ncols_, nrows_, 0);
-  inOpenSet_ = Field<bool, 0>(ncols_, nrows_, false);
-  isUpdated_ = Field<bool, 0>(ncols_, nrows_, false);
-  lightSources_.reset(new point[ncols_ * nrows_]);
+  gScore_ = std::make_unique<Field<double>>(nx_, ny_, std::numeric_limits<double>::infinity());
+  fScore_ = std::make_unique<Field<double>>(nx_, ny_, std::numeric_limits<double>::infinity());
+  cameFrom_ = std::make_unique<Field<size_t>>(nx_, ny_, 0);
+  inOpenSet_ = std::make_unique<Field<bool>>(nx_, ny_, false);
+  isUpdated_ = std::make_unique<Field<bool>>(nx_, ny_, false);
+
+  lightSources_.reset(new point[nx_ * ny_]);
 
   visibilityHashMap_.clear();
   openSet_.reset();
 
   // Reserve openSet_
   std::vector<Node> container;
-  container.reserve(ncols_*nrows_);
+  container.reserve(nx_*ny_);
   std::priority_queue<Node, std::vector<Node>, std::less<Node>> heap(std::less<Node>(), std::move(container));
   openSet_ = std::make_unique<std::priority_queue<Node>>(heap); 
 
@@ -58,7 +59,7 @@ void solver::reset() {
   nb_of_iterations_ = 0;
   
   // Reserve hash map
-  visibilityHashMap_.reserve(ncols_ * nrows_ * 2);
+  visibilityHashMap_.reserve(nx_ * ny_ * 2);
 }
 
 /******************************************************************************************************/
@@ -75,15 +76,15 @@ void solver::visibilityBasedSolver() {
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
-    x = initial_frontline[i]; y = nrows_ - 1 - initial_frontline[i+1];
+    x = initial_frontline[i]; y = ny_ - 1 - initial_frontline[i+1];
     d = 0;
-    gScore_(x, y) = d;
-    isUpdated_(x, y) = true;
-    cameFrom_(x, y) = nb_of_sources_;
+    gScore_->set(x, y, d);
+    isUpdated_->set(x, y, true);
+    cameFrom_->set(x, y, nb_of_sources_);
     lightSources_[nb_of_sources_] = {x, y};
 
     openSet_->push(Node{x, y, d});
-    visibilityHashMap_[y + ncols_ * x + nrows_ * ncols_ * nb_of_sources_] = lightStrength_;
+    visibilityHashMap_[y + nx_ * x + ny_ * nx_ * nb_of_sources_] = lightStrength_;
     ++nb_of_sources_;
     ++nb_of_iterations_;
   }
@@ -107,16 +108,16 @@ void solver::visibilityBasedSolver() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= ncols_ || neighbour_y >= nrows_) { continue; };
-      if (isUpdated_(neighbour_x, neighbour_y)) { continue; };
-      if (sharedVisibilityField_(neighbour_x, neighbour_y) < 1) {
+      if (neighbour_x >= nx_ || neighbour_y >= ny_) { continue; };
+      if (isUpdated_->get(neighbour_x, neighbour_y)) { continue; };
+      if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) {
         if (sharedConfig_->expandInObstacles) {
-          gScore_(neighbour_x, neighbour_y) = gScore_(x, y) + evaluateDistanceSpeedField(x, y, neighbour_x, neighbour_y);
-          openSet_->push(Node{neighbour_x, neighbour_y, gScore_(neighbour_x, neighbour_y)});
-          visibilityHashMap_[y + ncols_ * x + nrows_ * ncols_ * nb_of_sources_] = sharedVisibilityField_(neighbour_x, neighbour_y);;
+          gScore_->set(neighbour_x, neighbour_y, gScore_->get(x, y) + evaluateDistanceSpeedField(x, y, neighbour_x, neighbour_y));
+          openSet_->push(Node{neighbour_x, neighbour_y, gScore_->get(neighbour_x, neighbour_y)});
+          visibilityHashMap_[y + nx_ * x + ny_ * nx_ * nb_of_sources_] = sharedVisibilityField_->get(neighbour_x, neighbour_y);;
         }
-        cameFrom_(neighbour_x, neighbour_y) = cameFrom_(x, y);
-        isUpdated_(neighbour_x, neighbour_y) = true; 
+        cameFrom_->set(neighbour_x, neighbour_y, cameFrom_->get(x, y));
+        isUpdated_->set(neighbour_x, neighbour_y, true); 
         continue; 
       }
       
@@ -133,11 +134,11 @@ void solver::visibilityBasedSolver() {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
-        gScore_(neighbour_x, neighbour_y) = minimum_element->first;
-        cameFrom_(neighbour_x, neighbour_y) = minimum_element->second;
+        gScore_->set(neighbour_x, neighbour_y, minimum_element->first);
+        cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
       }
-      openSet_->push(Node{neighbour_x, neighbour_y, gScore_(neighbour_x, neighbour_y)});
-      isUpdated_(neighbour_x, neighbour_y) = true;
+      openSet_->push(Node{neighbour_x, neighbour_y, gScore_->get(neighbour_x, neighbour_y)});
+      isUpdated_->set(neighbour_x, neighbour_y, true);
       ++nb_of_iterations_;
     }
   };
@@ -169,23 +170,23 @@ void solver::vStarSearch() {
   double g = 0, h = 0, f = 0;
   int x = 0, y = 0, neighbour_x = 0, neighbour_y = 0;
   int endX = sharedConfig_->target_x;
-  int endY = nrows_ - 1 - sharedConfig_->target_y;
+  int endY = ny_ - 1 - sharedConfig_->target_y;
 
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
-    x = initial_frontline[i]; y = nrows_ - 1 - initial_frontline[i+1];
+    x = initial_frontline[i]; y = ny_ - 1 - initial_frontline[i+1];
     g = 0; h = 0;
     if (sharedConfig_->greedy) { h = evaluateDistance(x, y, endX, endY); }
     f = g + h;
     openSet_->push(Node{x, y, f});
 
-    gScore_(x, y) = g;
-    fScore_(x, y) = f;
-    cameFrom_(x, y) = nb_of_sources_;
-    isUpdated_(x, y) = true;
+    gScore_->set(x, y, g);
+    fScore_->set(x, y, f);
+    cameFrom_->set(x, y,nb_of_sources_);
+    isUpdated_->set(x, y, true);
     lightSources_[nb_of_sources_] = {x, y};
-    visibilityHashMap_[y + ncols_ * x + nrows_ * ncols_ * nb_of_sources_] = lightStrength_;
+    visibilityHashMap_[y + nx_ * x + ny_ * nx_ * nb_of_sources_] = lightStrength_;
     ++nb_of_sources_;
     ++nb_of_iterations_;
   }
@@ -224,11 +225,11 @@ void solver::vStarSearch() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= ncols_ || neighbour_y >= nrows_) { continue; };
-      if (isUpdated_(neighbour_x, neighbour_y)) { continue; };
-      if (sharedVisibilityField_(neighbour_x, neighbour_y) < 1) {
-        cameFrom_(neighbour_x, neighbour_y) = cameFrom_(x, y);
-        isUpdated_(neighbour_x, neighbour_y) = true; 
+      if (neighbour_x >= nx_ || neighbour_y >= ny_) { continue; };
+      if (isUpdated_->get(neighbour_x, neighbour_y)) { continue; };
+      if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) {
+        cameFrom_->set(neighbour_x, neighbour_y, cameFrom_->get(x, y));
+        isUpdated_->set(neighbour_x, neighbour_y, true); 
         continue; 
       }
       
@@ -245,17 +246,17 @@ void solver::vStarSearch() {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
-        gScore_(neighbour_x, neighbour_y) = minimum_element->first;
-        cameFrom_(neighbour_x, neighbour_y) = minimum_element->second;
+        gScore_->set(neighbour_x, neighbour_y, minimum_element->first);
+        cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
       }
 
       h = 0;
       if (sharedConfig_->greedy) { h = evaluateDistance(neighbour_x, neighbour_y, endX, endY); }
-      f = gScore_(neighbour_x, neighbour_y) + h;
-      fScore_(neighbour_x, neighbour_y) = f;
+      f = gScore_->get(neighbour_x, neighbour_y) + h;
+      fScore_->set(neighbour_x, neighbour_y, f);
 
       openSet_->push(Node{neighbour_x, neighbour_y, f});
-      isUpdated_(neighbour_x, neighbour_y) = true;
+      isUpdated_->set(neighbour_x, neighbour_y, true);
       ++nb_of_iterations_;
     }
   }
@@ -285,21 +286,21 @@ void solver::aStarSearch() {
   double g = 0, h = 0, f = 0;
   int x = 0, y = 0, neighbour_x = 0, neighbour_y = 0;
   int endX = sharedConfig_->target_x;
-  int endY = nrows_ - 1 - sharedConfig_->target_y;
+  int endY = ny_ - 1 - sharedConfig_->target_y;
 
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
-    x = initial_frontline[i]; y = nrows_ - 1 - initial_frontline[i+1];
+    x = initial_frontline[i]; y = ny_ - 1 - initial_frontline[i+1];
     g = 0; h = 0;
     if (sharedConfig_->greedy) { h = evaluateDistance(x, y, endX, endY); }
     f = g + h;
     openSet_->push(Node{x, y, f});
-    inOpenSet_(x, y) = true;
+    inOpenSet_->set(x, y, true);
     
-    gScore_(x, y) = g;
-    fScore_(x, y) = f;
-    cameFrom_(x, y) = indexAt(x, y);
+    gScore_->set(x, y, g);
+    fScore_->set(x, y, f);
+    cameFrom_->set(x, y, indexAt(x, y));
     ++nb_of_iterations_;
   }
 
@@ -323,7 +324,7 @@ void solver::aStarSearch() {
     }
 
     openSet_->pop();
-    inOpenSet_(x, y) = false;
+    inOpenSet_->set(x, y, false);
 
     // Expand frontline at current & update neighbours
     for (size_t j = 0; j < 16; j += 2) {
@@ -332,22 +333,22 @@ void solver::aStarSearch() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= ncols_ || neighbour_y >= nrows_ || neighbour_x < 0 || neighbour_y < 0) { continue; };
-      if (sharedVisibilityField_(neighbour_x, neighbour_y) < 1) { continue; }
+      if (neighbour_x >= nx_ || neighbour_y >= ny_ || neighbour_x < 0 || neighbour_y < 0) { continue; };
+      if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) { continue; }
 
-      g = gScore_(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y); // neighbour_distances_[j];
-      if (g >= gScore_(neighbour_x, neighbour_y)) { continue; };
+      g = gScore_->get(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y); // neighbour_distances_[j];
+      if (g >= gScore_->get(neighbour_x, neighbour_y)) { continue; };
 
-      cameFrom_(neighbour_x, neighbour_y) = indexAt(x, y);
-      gScore_(neighbour_x, neighbour_y) = g;
+      cameFrom_->set(neighbour_x, neighbour_y, indexAt(x, y));
+      gScore_->set(neighbour_x, neighbour_y, g);;
       if (sharedConfig_->greedy) { h = evaluateDistance(neighbour_x, neighbour_y, endX, endY); }
-      f = gScore_(neighbour_x, neighbour_y) + h;
-      fScore_(neighbour_x, neighbour_y) = f;
+      f = gScore_->get(neighbour_x, neighbour_y) + h;
+      fScore_->set(neighbour_x, neighbour_y, f);
       ++nb_of_iterations_;
-      if (inOpenSet_(neighbour_x, neighbour_y)) { continue; }
+      if (inOpenSet_->get(neighbour_x, neighbour_y)) { continue; }
 
       openSet_->push(Node{neighbour_x, neighbour_y, f});
-      inOpenSet_(neighbour_x, neighbour_y) = true;
+      inOpenSet_->set(neighbour_x, neighbour_y, true);;
     }
   };
 
@@ -371,9 +372,9 @@ void solver::computeDistanceFunction() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<int> initial_frontline;
-  for (size_t i = 0; i < ncols_; ++i) {
-    for (size_t j = 0; j < nrows_; ++j) {
-      if (sharedVisibilityField_(i, j) <= visibilityThreshold_) {
+  for (size_t i = 0; i < nx_; ++i) {
+    for (size_t j = 0; j < ny_; ++j) {
+      if (sharedVisibilityField_->get(i, j) <= visibilityThreshold_) {
         initial_frontline.push_back(i);
         initial_frontline.push_back(j);
       }
@@ -388,14 +389,14 @@ void solver::computeDistanceFunction() {
     g = 0;
     f = g;
     openSet_->push(Node{x, y, f});
-    inOpenSet_(x, y) = true;
+    inOpenSet_->set(x, y, true);
 
-    gScore_(x, y) = g;
-    fScore_(x, y) = f;
-    isUpdated_(x, y) = true;
-    cameFrom_(x, y) = nb_of_sources_;
+    gScore_->set(x, y, g);
+    fScore_->set(x, y, f);
+    isUpdated_->set(x, y, true);
+    cameFrom_->set(x, y,nb_of_sources_);
     lightSources_[nb_of_sources_] = {x, y};
-    visibilityHashMap_[y + ncols_ * x + nrows_ * ncols_ * nb_of_sources_] = lightStrength_;
+    visibilityHashMap_[y + nx_ * x + ny_ * nx_ * nb_of_sources_] = lightStrength_;
     ++nb_of_sources_;
   }
 
@@ -410,7 +411,7 @@ void solver::computeDistanceFunction() {
     x = current.x; y = current.y;
 
     openSet_->pop();
-    inOpenSet_(x, y) = false;
+    inOpenSet_->set(x, y, false);
 
     // Expand frontline at current & update neighbours
     for (size_t j = 0; j < 16; j += 2) {
@@ -419,8 +420,8 @@ void solver::computeDistanceFunction() {
       neighbour_y = y + neighbours_[j+1];
 
       // Box check
-      if (neighbour_x >= ncols_ || neighbour_y >= nrows_) { continue; };
-      if (isUpdated_(neighbour_x, neighbour_y)) { continue; };
+      if (neighbour_x >= nx_ || neighbour_y >= ny_) { continue; };
+      if (isUpdated_->get(neighbour_x, neighbour_y)) { continue; };
       
       potentialSources = queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
       potentialDistances = getPotentialDistances(potentialSources, potentialDistances, neighbour_x, neighbour_y);
@@ -435,19 +436,19 @@ void solver::computeDistanceFunction() {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
-        gScore_(neighbour_x, neighbour_y) = minimum_element->first;
-        cameFrom_(neighbour_x, neighbour_y) = minimum_element->second;
+        gScore_->set(neighbour_x, neighbour_y, minimum_element->first);
+        cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
       }
 
-      f = gScore_(neighbour_x, neighbour_y);
-      fScore_(neighbour_x, neighbour_y) = f;
+      f = gScore_->get(neighbour_x, neighbour_y);
+      fScore_->set(neighbour_x, neighbour_y, f);
 
-      if (!inOpenSet_(neighbour_x, neighbour_y)) {
+      if (!inOpenSet_->get(neighbour_x, neighbour_y)) {
         openSet_->push(Node{neighbour_x, neighbour_y, f});
-        inOpenSet_(neighbour_x, neighbour_y) = true;
+        inOpenSet_->set(neighbour_x, neighbour_y, true);;
       }
 
-      isUpdated_(neighbour_x, neighbour_y) = true;
+      isUpdated_->set(neighbour_x, neighbour_y, true);
     }
   };
 
@@ -477,10 +478,10 @@ std::vector<size_t>& solver::queuePotentialSources(std::vector<size_t>& potentia
     potentialSource_x = neighbour_x + neighbours_[k];
     potentialSource_y = neighbour_y + neighbours_[k+1];
     // Box check
-    if (potentialSource_x >= ncols_ || potentialSource_y >= nrows_) { continue; };
-    if (!isUpdated_(potentialSource_x, potentialSource_y)) { continue; };
+    if (potentialSource_x >= nx_ || potentialSource_y >= ny_) { continue; };
+    if (!isUpdated_->get(potentialSource_x, potentialSource_y)) { continue; };
 
-    lightSource_num = cameFrom_(potentialSource_x, potentialSource_y);
+    lightSource_num = cameFrom_->get(potentialSource_x, potentialSource_y);
     // Pick only unique sources (no repitition in potentialSources)
     if (std::find(potentialSources.begin(), potentialSources.end(), lightSource_num) == potentialSources.end()) {
       potentialSources.push_back(lightSource_num);
@@ -503,8 +504,8 @@ std::vector<std::pair<double, size_t>>& solver::getPotentialDistances(const std:
     // update visibility from source
     updatePointVisibility(potentialSource, lightSource_x, lightSource_y, neighbour_x, neighbour_y);
     distance = INFINITY;
-    if (visibilityHashMap_.at(neighbour_y + ncols_ * neighbour_x + nrows_ * ncols_ * potentialSource) >= visibilityThreshold_) {
-      distance = gScore_(lightSource_x, lightSource_y) + evaluateDistance(lightSource_x, lightSource_y, neighbour_x, neighbour_y);
+    if (visibilityHashMap_.at(neighbour_y + nx_ * neighbour_x + ny_ * nx_ * potentialSource) >= visibilityThreshold_) {
+      distance = gScore_->get(lightSource_x, lightSource_y) + evaluateDistance(lightSource_x, lightSource_y, neighbour_x, neighbour_y);
     }
     potentialDistances.push_back(std::pair<double, int>{distance, potentialSource});
   }
@@ -525,8 +526,8 @@ std::vector<std::pair<double, size_t>>& solver::getPotentialDistancesSpeedField(
     // update visibility from source
     updatePointVisibility(potentialSource, lightSource_x, lightSource_y, neighbour_x, neighbour_y);
     distance = INFINITY;
-    if (visibilityHashMap_.at(neighbour_y + ncols_ * neighbour_x + nrows_ * ncols_ * potentialSource) >= visibilityThreshold_) {
-      distance = gScore_(lightSource_x, lightSource_y) + evaluateDistanceSpeedField(lightSource_x, lightSource_y, neighbour_x, neighbour_y);
+    if (visibilityHashMap_.at(neighbour_y + nx_ * neighbour_x + ny_ * nx_ * potentialSource) >= visibilityThreshold_) {
+      distance = gScore_->get(lightSource_x, lightSource_y) + evaluateDistanceSpeedField(lightSource_x, lightSource_y, neighbour_x, neighbour_y);
     }
     potentialDistances.push_back(std::pair<double, int>{distance, potentialSource});
   }
@@ -541,7 +542,7 @@ void solver::createNewPivot(const int x, const int y, const int neighbour_x, con
   // Pushback parent as a new lightSource
   lightSources_[nb_of_sources_] = std::make_pair(x, y); // {x, y};
   // Pusback pivot & update light source visibility
-  visibilityHashMap_[y + ncols_ * x + nrows_ * ncols_ * nb_of_sources_] = lightStrength_;
+  visibilityHashMap_[y + nx_ * x + ny_ * nx_ * nb_of_sources_] = lightStrength_;
   // Update maps of new pivot_
   // Update neighbours of initial frontline points - both distance & visibility
   for(size_t p = 0; p < 16; p += 2) {
@@ -549,13 +550,13 @@ void solver::createNewPivot(const int x, const int y, const int neighbour_x, con
     pivot_neighbour_x = x + neighbours_[p];
     pivot_neighbour_y = y + neighbours_[p+1];
     // Box check
-    if (pivot_neighbour_x >= ncols_ || pivot_neighbour_y >= nrows_) { continue; }
+    if (pivot_neighbour_x >= nx_ || pivot_neighbour_y >= ny_) { continue; }
     // Update neighbour visibility
     updatePointVisibility(nb_of_sources_, x, y, pivot_neighbour_x, pivot_neighbour_y);
-    visibilityHashMap_[pivot_neighbour_y + ncols_ * pivot_neighbour_x + nrows_ * ncols_ * nb_of_sources_] = visibilityHashMap_.at(pivot_neighbour_y + ncols_ * pivot_neighbour_x + nrows_ * ncols_ * nb_of_sources_);
+    visibilityHashMap_[pivot_neighbour_y + nx_ * pivot_neighbour_x + ny_ * nx_ * nb_of_sources_] = visibilityHashMap_.at(pivot_neighbour_y + nx_ * pivot_neighbour_x + ny_ * nx_ * nb_of_sources_);
   }
-  cameFrom_(neighbour_x, neighbour_y) = nb_of_sources_;
-  gScore_(neighbour_x, neighbour_y) = gScore_(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y);
+  cameFrom_->set(neighbour_x, neighbour_y, nb_of_sources_);
+  gScore_->set(neighbour_x, neighbour_y, gScore_->get(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y));
   ++nb_of_sources_;
 }
 
@@ -568,20 +569,20 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
   double c = 0;
 
   // Check if visibility value already exists
-  size_t key = y + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+  size_t key = y + nx_ * x + ny_ * nx_ * lightSourceNumber;
   if (visibilityHashMap_.count(key)) {
     return;
   }
 
   if (x == lightSource_x) {
     if (y - lightSource_y > 0) { 
-      key = (y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+      key = (y-1) + nx_ * x + ny_ * nx_ * lightSourceNumber;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y-1);
       } 
       v = visibilityHashMap_.at(key);
     } else {
-      key = y+1 + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;;
+      key = y+1 + nx_ * x + ny_ * nx_ * lightSourceNumber;;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y+1);
       } 
@@ -589,13 +590,13 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
     }
   } else if (y == lightSource_y) {
     if (x - lightSource_x > 0) { 
-      key = y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+      key = y + nx_ * (x-1) + ny_ * nx_ * lightSourceNumber;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y);
       } 
       v = visibilityHashMap_.at(key);
     } else {
-      key = y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+      key = y + nx_ * (x+1) + ny_ * nx_ * lightSourceNumber;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y);
       } 
@@ -604,14 +605,14 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
   } else {
     // Q1
     if ((x - lightSource_x > 0) && (y - lightSource_y > 0)) {
-      key = (y-1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+      key = (y-1) + nx_ * (x-1) + ny_ * nx_ * lightSourceNumber;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y-1);
       }
       if (x - lightSource_x == y - lightSource_y) {
         v = visibilityHashMap_.at(key);
       } else if (x - lightSource_x < y - lightSource_y) {
-        const size_t key_1 = (y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_1 = (y-1) + nx_ * x + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y-1);
         }
@@ -619,7 +620,7 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (x - lightSource_x > y - lightSource_y) {
-        const size_t key_2 = y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_2 = y + nx_ * (x-1) + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y);
         }
@@ -630,14 +631,14 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
     } 
     // Q2
     else if ((x - lightSource_x > 0) && (y - lightSource_y < 0)) {
-      key = (y+1) + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+      key = (y+1) + nx_ * (x-1) + ny_ * nx_ * lightSourceNumber;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y+1);
       }
       if (x - lightSource_x == lightSource_y - y) {
         v = visibilityHashMap_.at(key);
       } else if (x - lightSource_x < lightSource_y - y) {
-        const size_t key_1 = y+1 + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_1 = y+1 + nx_ * x + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y+1);
         }
@@ -645,7 +646,7 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (x - lightSource_x > lightSource_y - y) {
-        const size_t key_2 = y + ncols_ * (x-1) + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_2 = y + nx_ * (x-1) + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x-1, y);
         }
@@ -656,14 +657,14 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
     } 
     // Q3
     else if ((x - lightSource_x < 0) && (y - lightSource_y < 0)) {
-      key = (y+1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+      key = (y+1) + nx_ * (x+1) + ny_ * nx_ * lightSourceNumber;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y+1);
       }
       if (lightSource_x - x == lightSource_y - y) {
         v = visibilityHashMap_.at(key);
       } else if (lightSource_x - x < lightSource_y - y) {
-        const size_t key_1 = (y+1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_1 = (y+1) + nx_ * x + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y+1);
         }
@@ -671,7 +672,7 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (lightSource_x - x > lightSource_y - y) {
-        const size_t key_2 = y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_2 = y + nx_ * (x+1) + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y);
         }
@@ -682,14 +683,14 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
     } 
     // Q4
     else if ((x - lightSource_x < 0) && (y - lightSource_y > 0)) {
-      key = (y-1) + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+      key = (y-1) + nx_ * (x+1) + ny_ * nx_ * lightSourceNumber;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y-1);
       }
       if (lightSource_x - x == y - lightSource_y) {
         v = visibilityHashMap_.at(key);
       } else if (lightSource_x - x < y - lightSource_y) {
-        const size_t key_1 = (y-1) + ncols_ * x + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_1 = (y-1) + nx_ * x + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x, y-1);
         }
@@ -697,7 +698,7 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (lightSource_x - x > y - lightSource_y) {
-        const size_t key_2 = y + ncols_ * (x+1) + nrows_ * ncols_ * lightSourceNumber;
+        const size_t key_2 = y + nx_ * (x+1) + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y, x+1, y);
         }
@@ -707,8 +708,8 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
       }
     }
   }
-  v = v * sharedVisibilityField_(x, y);
-  visibilityHashMap_[y + ncols_ * x + nrows_ * ncols_ * lightSourceNumber] = v;
+  v = v * sharedVisibilityField_->get(x, y);
+  visibilityHashMap_[y + nx_ * x + ny_ * nx_ * lightSourceNumber] = v;
 }
 
 /******************************************************************************************************/
@@ -717,7 +718,7 @@ void solver::updatePointVisibility(const size_t lightSourceNumber, const int lig
 void solver::reconstructPath(const Node& current, const std::string& methodName) {
   std::vector<point> resultingPath;
   int x = current.x, y = current.y;
-  double t = cameFrom_(x, y);
+  double t = cameFrom_->get(x, y);
   double t_old = INFINITY;
   while (t != t_old) {
     resultingPath.push_back({x, y});
@@ -728,7 +729,7 @@ void solver::reconstructPath(const Node& current, const std::string& methodName)
       auto p = coordinatesAt(t);
       x = p.first; y = p.second;
     }
-    t = cameFrom_(x, y);
+    t = cameFrom_->get(x, y);
   }
   resultingPath.push_back({x, y});
   std::reverse(resultingPath.begin(), resultingPath.end());
@@ -805,9 +806,9 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
         return;
       }
       std::ostream& os = of;
-      for (int j = nrows_ - 1; j >= 0; --j){
-        for (size_t i = 0; i < ncols_; ++i) {
-          os << gScore_(i, j) << " "; 
+      for (int j = ny_ - 1; j >= 0; --j){
+        for (size_t i = 0; i < nx_; ++i) {
+          os << gScore_->get(i, j) << " "; 
         }
         os << "\n";
       }
@@ -826,9 +827,9 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       return;
     }
     std::ostream& os = of;
-    for (int j = nrows_ - 1; j >= 0; --j){
-      for (size_t i = 0; i < ncols_; ++i) {
-        os << gScore_(i, j) << " "; 
+    for (int j = ny_ - 1; j >= 0; --j){
+      for (size_t i = 0; i < nx_; ++i) {
+        os << gScore_->get(i, j) << " "; 
       }
       os << "\n";
     }
@@ -845,9 +846,9 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
         return;
       }
       std::ostream& os1 = of1;
-      for (int j = nrows_ - 1; j >= 0; --j){
-        for (size_t i = 0; i < ncols_; ++i) {
-          os1 << cameFrom_(i, j) << " "; 
+      for (int j = ny_ - 1; j >= 0; --j){
+        for (size_t i = 0; i < nx_; ++i) {
+          os1 << cameFrom_->get(i, j) << " "; 
         }
         os1 << "\n";
       }
@@ -867,7 +868,7 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       }
       std::ostream& os = of3;
       for (size_t i = 0; i < nb_of_sources_; ++i) { 
-        os << lightSources_[i].first << " " << nrows_- 1 - lightSources_[i].second ; 
+        os << lightSources_[i].first << " " << ny_- 1 - lightSources_[i].second ; 
         os<< "\n";
       }
       of3.close();
@@ -888,7 +889,7 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
     }
     std::ostream& os = of;
     for (size_t i = 0; i < resultingPath.size(); ++i) { 
-      os << resultingPath[i].first << " " << nrows_ - 1 - resultingPath[i].second ; 
+      os << resultingPath[i].first << " " << ny_ - 1 - resultingPath[i].second ; 
       os<< "\n";
     }
     of.close();
@@ -906,9 +907,9 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       return;
     }
     std::ostream& os = of1;
-    for (int j = nrows_ - 1; j >= 0; --j){
-      for (size_t i = 0; i < ncols_; ++i) {
-        os << gScore_(i, j) << " "; 
+    for (int j = ny_ - 1; j >= 0; --j){
+      for (size_t i = 0; i < nx_; ++i) {
+        os << gScore_->get(i, j) << " "; 
       }
       os << "\n";
     }
@@ -927,9 +928,9 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
       return;
     }
     std::ostream& os = of2;
-    for (int j = nrows_ - 1; j >= 0; --j){
-      for (size_t i = 0; i < ncols_; ++i) {
-        os << fScore_(i, j) << " "; 
+    for (int j = ny_ - 1; j >= 0; --j){
+      for (size_t i = 0; i < nx_; ++i) {
+        os << fScore_->get(i, j) << " "; 
       }
       os << "\n";
     }
@@ -949,7 +950,7 @@ void solver::saveResults(const std::vector<point>& resultingPath, const std::str
     }
     std::ostream& os = of3;
     for (size_t i = 0; i < nb_of_sources_; ++i) { 
-      os << lightSources_[i].first << " " << nrows_ - 1 - lightSources_[i].second ; 
+      os << lightSources_[i].first << " " << ny_ - 1 - lightSources_[i].second ; 
       os<< "\n";
     }
     of3.close();

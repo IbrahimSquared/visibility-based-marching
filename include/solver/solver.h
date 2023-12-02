@@ -43,10 +43,10 @@ class solver {
 private:
     void reset();
     void reconstructPath(const Node& current, const std::string& methodName);
-    inline int indexAt(const size_t x, const size_t y) const { return x + ncols_ * y; };
+    inline int indexAt(const size_t x, const size_t y) const { return x + y * nx_; };
     inline point coordinatesAt(size_t index) const {
-        size_t x = index % ncols_;
-        size_t y = (index) / ncols_;
+        size_t x = index % nx_;
+        size_t y = (index) / nx_;
         return {x, y};
     }
 
@@ -65,70 +65,11 @@ private:
     */
     inline std::vector<std::pair<double, size_t>>& getPotentialDistancesSpeedField(const std::vector<size_t>& potentialSources, std::vector<std::pair<double, size_t>>& potentialDistances, const int neighbour_x, const int neighbour_y);
 
-
-    /*
-    cityblock distance between (x1,y1) and (x2,y2) is abs(x1-x2)
-    + abs(y1-y2).  The chessboard distance is max(abs(x1-x2),
-    abs(y1-y2)).  The quasi-Euclidean distance is:
-        abs(x1-x2) + (sqrt(2)-1)*abs(y1-y2),  if abs(x1-x2) > abs(y1-y2)
-        (sqrt(2)-1)*abs(x1-x2) + abs(y1-y2),  otherwise
-    */
-
     inline double evaluateDistance(const int x1, const int y1, const int x2, const int y2) const { return sqrt( (x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) ); };
     inline double evaluateDistanceSpeedField(const int source_x, const int source_y, const int target_x, const int target_y) const { 
       return sqrt((double)(source_x-target_x) * (source_x-target_x) + (source_y-target_y) * (source_y-target_y))
-        * sharedSpeedField_(target_x, target_y);
+        * sharedSpeedField_->get(target_x, target_y);
     };
-
-    /*
-    // Canberra (|x1 - x2| / (|x1| + |x2|)) + (|y1 - y2| / (|y1| + |y2|))
-    inline double evaluateDistance(const int x1, const int y1, const int x2, const int y2) const { return double(abs(x1-x2))/(x1 + x2) + double(abs(y1-y2))/(y1+y2) ; };
-    inline double evaluateDistanceSpeedField(const int source_x, const int source_y, const int target_x, const int target_y) const { 
-      return double(abs(source_x-target_x))/(source_x + target_x) + double(abs(source_y-target_y))/(source_y+target_y)
-        * sharedSpeedField_(target_x, target_y);
-    };
-    */
-
-    /*
-    // rewrite the two equations above but to compute the Minkowsi distance with p = 3 instead
-    inline double evaluateDistance(const int x1, const int y1, const int x2, const int y2) const { return pow( pow(abs(x1-x2), 3) + pow(abs(y1-y2), 3), 1.0/3.0); };
-    inline double evaluateDistanceSpeedField(const int source_x, const int source_y, const int target_x, const int target_y) const {
-      return pow( pow(abs(source_x-target_x), 3) + pow(abs(source_y-target_y), 3), 1.0/3.0)
-        * sharedSpeedField_(target_x, target_y);
-    };
-    */
-
-    /*
-    inline double evaluateDistance(const int x1, const int y1, const int x2, const int y2) const { return abs(y1 - y2) + abs(x1 - x2); };
-    inline double evaluateDistanceSpeedField(const int source_x, const int source_y, const int target_x, const int target_y) const { 
-      return (abs(target_x - source_x) + abs(target_y - source_y)) * sharedSpeedField_(target_x, target_y);
-    };
-    */
-
-    /*
-    inline double evaluateDistance(const int x1, const int y1, const int x2, const int y2) const { return std::max(abs(x1-x2), abs(y1-y2)); };
-    inline double evaluateDistanceSpeedField(const int source_x, const int source_y, const int target_x, const int target_y) const { 
-      return std::max(abs(source_x-target_x), abs(source_y-target_y)) * sharedSpeedField_(target_x, target_y);
-    };
-    */
-
-    /*
-    inline double evaluateDistance(const int x1, const int y1, const int x2, const int y2) const { 
-      if (abs(x1-x2) > abs(y1-y2)) {
-        return abs(x1-x2) + (sqrt(2)-1)*abs(y1-y2);
-      } else {
-        return (sqrt(2)-1)*abs(x1-x2) + abs(y1-y2);
-      }
-    };
-    inline double evaluateDistanceSpeedField(const int source_x, const int source_y, const int target_x, const int target_y) const { 
-      if (abs(source_x-target_x) > abs(source_y-target_y)) {
-        return ( abs(source_x-target_x) + (sqrt(2)-1)*abs(source_y-target_y) ) * sharedSpeedField_(target_x, target_y);
-      } else {
-        return ( (sqrt(2)-1)*abs(source_x-target_x) + abs(source_y-target_y) ) * sharedSpeedField_(target_x, target_y);
-      }
-    };
-    */
-
     inline void createNewPivot(const int x, const int y, const int neighbour_x, const int neighbour_y);
 
     void saveResults(const std::vector<point>& path, const std::string& methodName);
@@ -142,8 +83,8 @@ private:
     * @param [in] value of visibility.
     */
     inline void insertIntoVisibilityHashMap(const size_t x, const size_t y, const size_t lightSource_num, const double value) {
-        visibilityHashMap_[y + ncols_ * x + nrows_ * ncols_ * (lightSource_num + 0)] = value;
-        // visibilityHashMap_.try_emplace(y + ncols_ * x + nrows_ * ncols_ * (lightSource_num + 0), value);
+        visibilityHashMap_[y + nx_ * x + ny_ * nx_ * (lightSource_num + 0)] = value;
+        // visibilityHashMap_.try_emplace(y + nx_ * x + ny_ * nx_ * (lightSource_num + 0), value);
     }
 
     /*!
@@ -153,7 +94,7 @@ private:
     * @param [in] lightSource_enum number of the light source.
     */
     inline double VisibilityHashMapAt(const size_t x, const size_t y, const size_t lightSource_num) const { 
-      return visibilityHashMap_.at(y + ncols_ * x + nrows_ * ncols_ * (lightSource_num + 0)); 
+      return visibilityHashMap_.at(y + nx_ * x + ny_ * nx_ * (lightSource_num + 0)); 
     };
 
     /*!
@@ -163,8 +104,8 @@ private:
     * @param [in] lightSource_enum number of the light source.
     */
     inline bool ExistsInVisibilityHashMap(const size_t x, const size_t y, const size_t lightSource_num) const { 
-      return visibilityHashMap_.count(y + ncols_ * x + nrows_ * ncols_ * (lightSource_num + 0));
-      // return visibilityHashMap_.contains(y + ncols_ * x + nrows_ * ncols_ * (lightSource_num + 0)); 
+      return visibilityHashMap_.count(y + nx_ * x + ny_ * nx_ * (lightSource_num + 0));
+      // return visibilityHashMap_.contains(y + nx_ * x + ny_ * nx_ * (lightSource_num + 0)); 
     };
 
     /*!
@@ -177,16 +118,17 @@ private:
     */
     void updatePointVisibility(const size_t lightSourceNumber, const int lightSource_x, const int lightSource_y, const int x, const int y);
 
-    Field<double, 1> sharedVisibilityField_;
-    Field<double, 1> sharedSpeedField_;
-    std::shared_ptr<Config> sharedConfig_;
+    std::shared_ptr<Field<double>> sharedVisibilityField_;
+    std::shared_ptr<Field<double>> sharedSpeedField_;
 
-    Field<bool, 0> inOpenSet_;
-    Field<bool, 0> inClosedSet_;
-    Field<double, 0> gScore_;
-    Field<double, 0> fScore_;
-    Field<size_t, 0> cameFrom_;
-    Field<bool, 0> isUpdated_;
+    std::unique_ptr<Field<double>> gScore_;
+    std::unique_ptr<Field<double>> fScore_;
+    std::unique_ptr<Field<size_t>> cameFrom_;
+    std::unique_ptr<Field<bool>> inOpenSet_;
+    std::unique_ptr<Field<bool>> inClosedSet_;
+    std::unique_ptr<Field<bool>> isUpdated_;
+    
+    std::shared_ptr<Config> sharedConfig_;
     std::unique_ptr<point[]> lightSources_;
 
     // Lightstrength, can be decreased. Can add later an alpha that has light decay, enforcing adding a new pivot periodically.
@@ -207,7 +149,7 @@ private:
       2, 0, 0, 2, -2, 0, 0, -2,
       2, 1, 2, 2, 1, 2, -1, 2, -2, 2, -2, 1, -2, -1, -2, -2, -1, -2, 1, -2, 2, -2, 2, -1};
     // Dimensions.
-    size_t nrows_; size_t ncols_;
+    size_t ny_; size_t nx_;
     // Heap openSet_;
     std::unique_ptr<std::priority_queue<Node>> openSet_;
 
