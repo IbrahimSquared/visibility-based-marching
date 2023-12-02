@@ -77,6 +77,12 @@ void solver::visibilityBasedSolver() {
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i]; y = ny_ - 1 - initial_frontline[i+1];
+    // Check if all starting positions are valid
+    if (sharedVisibilityField_->get(x, y) < 1) {
+      std::cout << "At least one of the starting positions is invalid/occupied" << std::endl;
+      return;
+    }
+
     d = 0;
     gScore_->set(x, y, d);
     isUpdated_->set(x, y, true);
@@ -172,10 +178,21 @@ void solver::vStarSearch() {
   int endX = sharedConfig_->target_x;
   int endY = ny_ - 1 - sharedConfig_->target_y;
 
+  // check if target is feasible
+  if (sharedVisibilityField_->get(endX, endY) < 1) {
+    std::cout << "Target position is invalid/occupied" << std::endl;
+    return;
+  }
+
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i]; y = ny_ - 1 - initial_frontline[i+1];
+    // Check if starting position is valid
+    if (sharedVisibilityField_->get(x, y) < 1) {
+      std::cout << "Starting position is invalid/occupied" << std::endl;
+      return;
+    }
     g = 0; h = 0;
     if (sharedConfig_->greedy) { h = evaluateDistance(x, y, endX, endY); }
     f = g + h;
@@ -288,10 +305,22 @@ void solver::aStarSearch() {
   int endX = sharedConfig_->target_x;
   int endY = ny_ - 1 - sharedConfig_->target_y;
 
+  // check if target is feasible
+  if (sharedVisibilityField_->get(endX, endY) < 1) {
+    std::cout << "Target position is invalid/occupied" << std::endl;
+    return;
+  }
+
   auto& initial_frontline = sharedConfig_->initialFrontline;
   // Fill in data from initial frontline
   for(size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i]; y = ny_ - 1 - initial_frontline[i+1];
+    // Check if starting position is valid
+    if (sharedVisibilityField_->get(x, y) < 1) {
+      std::cout << "Starting position is invalid/occupied" << std::endl;
+      return;
+    }
+
     g = 0; h = 0;
     if (sharedConfig_->greedy) { h = evaluateDistance(x, y, endX, endY); }
     f = g + h;
