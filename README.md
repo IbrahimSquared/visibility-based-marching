@@ -33,7 +33,8 @@ The repo includes expfig and MSFM with their licenses inside for usage/compariso
 
 # Important: Standard for inputting/reading images 
 Mode=2 reads an image map, the path of which is specified in imagePath in settings.config, for example lab_image_edited.png (893x646) in the folder images. <br>
-If you open the image in Paint for example, the (1,1) pixel coordinate is the top left corner, and the (893x646) is in the right bottom corner. Meshes and matrices in MATLAB, instead, consider the bottom left corner as (1,1) and top right corner as (893x646). Since we are visualizing the results in MATLAB, the code has been edited to be MATLAB-style compatible. This is relevant to selecting initialFrontline (starting point/s) and target_x and target_y (end/target point). The x coordinate (first element of initialFrontline and target_x) are the same as in Paint for example. The y coordinate (second element of initialFrontline and target_y) should be selected as 646 - paint_y_coordinate for example for lab_image_edited. This standard can ofcourse be changed. Inside the code you'll find places where for example a y coordinate is set as y = nrows_ - 1 - initialFrontline{2}. This is to account to this fact and to the fact that C++ begins indices at 0 instead of 1. <br>
+Bottom left corner is the origin. <br>
+This is relevant to selecting initialFrontline (starting point/s) and target_x and target_y (end/target point). This standard can ofcourse be changed.
 Note that initialFrontline in settings.config has the form {x1, y1, x2, y2, x3, y3...}, where x and y are the coordinates of starting positions.
 
 # MATLAB interface for reading output and generating plots/visualizations
