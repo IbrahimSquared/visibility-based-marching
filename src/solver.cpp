@@ -767,6 +767,16 @@ void solver::reconstructPath(const Node& current, const std::string& methodName)
     saveImageWithPath(resultingPath, methodName);
     saveResults(resultingPath, methodName);
   }
+
+  // compute total distance
+  double totalDistance = 0;
+  for (size_t i = 0; i < resultingPath.size() - 1; ++i) {
+    totalDistance += evaluateDistance(resultingPath[i].first, resultingPath[i].second, resultingPath[i+1].first, resultingPath[i+1].second);
+  }
+  if (!sharedConfig_->silent) {
+    std::cout << methodName << " path length: " << totalDistance << std::endl;
+  }
+
   return;
 }
 
