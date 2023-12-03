@@ -136,7 +136,7 @@ void solver::visibilityBasedSolver() {
       });
       distance = minimum_element->first;
 
-      if (distance == INFINITY) {
+      if (distance == std::numeric_limits<double>::infinity()) {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
@@ -259,7 +259,7 @@ void solver::vStarSearch() {
       });
       distance = minimum_element->first;
 
-      if (distance == INFINITY) {
+      if (distance == std::numeric_limits<double>::infinity()) {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
@@ -461,7 +461,7 @@ void solver::computeDistanceFunction() {
       });
       distance = minimum_element->first;
 
-      if (distance == INFINITY) {
+      if (distance == std::numeric_limits<double>::infinity()) {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
