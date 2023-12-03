@@ -18,12 +18,12 @@ class Field {
       for (size_t i = 0; i < size_; ++i) {
         data_[i] = default_value;
       }
-    }
+    } 
 
-    void set(size_t x, size_t y, T value) { data_[x + y * nx_] = value; }
-    T get(size_t x, size_t y) const { return data_[x + y * nx_]; }
-    size_t nx() const { return nx_; }
-    size_t ny() const { return ny_; }
+    void set(const size_t x, const size_t y, const T value) { data_[x + y * nx_] = value; }
+    const T get(const size_t x, const size_t y) const { return data_[x + y * nx_]; }
+    const size_t nx() const { return nx_; }
+    const size_t ny() const { return ny_; }
 
   private:
     size_t nx_;
