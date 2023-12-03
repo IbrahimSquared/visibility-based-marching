@@ -27,7 +27,7 @@ class solver {
   using Map = ska::flat_hash_map<size_t, double>;
   using point = std::pair<size_t, size_t>;
 
-  solver(environment& env);
+  explicit solver(environment& env);
 
   // Deconstructor
   ~solver() = default;
