@@ -9,9 +9,11 @@ namespace vbs {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-solver::solver(environment& env) : sharedConfig_(env.getConfig()) {
-  sharedVisibilityField_ = env.getVisibilityField();
-  sharedSpeedField_ = env.getSpeedField();
+solver::solver(environment& env) 
+  : sharedConfig_(env.getConfig()), 
+  sharedVisibilityField_(env.getVisibilityField()), 
+  sharedSpeedField_(env.getSpeedField()) {
+
   nx_ = sharedVisibilityField_->nx();
   ny_ = sharedVisibilityField_->ny();
   visibilityThreshold_ = sharedConfig_->visibilityThreshold;
