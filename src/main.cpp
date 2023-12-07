@@ -1,7 +1,7 @@
+#include <iostream>
+
 #include "environment/environment.h"
 #include "solver/solver.h"
-
-#include <iostream>
 
 using namespace vbs;
 
