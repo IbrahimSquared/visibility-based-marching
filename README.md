@@ -27,6 +27,11 @@ Sample ESDF computation using VBM: <br>
 VBM relies on an underlying visibility algorithm that computes visibility as shown below (introduced in https://github.com/IbrahimSquared/visibility-heuristic-path-planner). <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/visibility_polygon.jpg) <br>
 
+Sample vStar and aStar image/path results generated using SFML in C++: <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/vstar.png) <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/astar.png) <br>
+
+
 Please read how to compile/build the C++ files first below. <br>
 
 Inside config folder there is a settings.config file which the code parses. The code can run in two modes, either generating a random/fixed seed environment with specific dimensions & number/size of rectangular obstacles (mode=1) or reading an image (mode=2). <br>
