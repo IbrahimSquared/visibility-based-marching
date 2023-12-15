@@ -78,3 +78,9 @@ Make sure cmake is working using ``` cmake --version ```, a reload may be necess
 Set the cmakePath accordingly in settings.json: <br>
 ``` "cmake.cmakePath": "C:\\Workdir\\Programs\\msys64\\mingw64\\bin\\cmake.exe", ``` <br>
 This has been tested with the CMake Kit ``` GCC 12.2.0 x86_64-w64-mingw32 ``` both in release and debug modes.
+
+# To build or compile using cmake in Linux
+Set compiler path (or comment that part), make sure SFML libraries are installed, then: <br>
+``` mkdir build && cd build ``` <br>
+``` cmake .. ``` <br>
+``` make ```
