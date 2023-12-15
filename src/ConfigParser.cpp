@@ -366,6 +366,32 @@ bool ConfigParser::parse(const std::string &filename) {
         std::cerr << "It must be a boolean\n";
         return false;
       }
+    } else if (key == "saveVisibilityBasedSolverImage") {
+      if (value == "0" || value == "false") {
+        config_.saveVisibilityBasedSolverImage = false;
+      } else if (value == "1" || value == "true") {
+        config_.saveVisibilityBasedSolverImage = true;
+      } else {
+        std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
+      }
+    } else if (key == "ballRadius") {
+      try {
+        config_.ballRadius = std::stoi(value);
+      } catch (...) {
+        std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be an integer\n";
+        return false;
+      }
+    } else if (key == "number_of_contour_lines") {
+      try {
+        config_.number_of_contour_lines = std::stoi(value);
+      } catch (...) {
+        std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be an integer\n";
+        return false;
+      }
     } else {
       std::cerr << "Invalid/Irrelevant key: " << key << '\n';
       std::cerr << "Ignoring...\n";
