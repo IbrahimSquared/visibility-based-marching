@@ -3,8 +3,6 @@
 #include "environment/environment.h"
 #include "solver/solver.h"
 
-// #include <valgrind/callgrind.h>
-
 using namespace vbs;
 
 int main() {
@@ -35,11 +33,7 @@ int main() {
     sol.computeDistanceFunction();
   }
   if (config.visibilityBasedSolver) {
-    // CALLGRIND_START_INSTRUMENTATION;
-    // CALLGRIND_TOGGLE_COLLECT;
     sol.visibilityBasedSolver();
-    // CALLGRIND_TOGGLE_COLLECT;
-    // CALLGRIND_STOP_INSTRUMENTATION;
   }
   return 1;
 }
