@@ -2,14 +2,12 @@
 
 #include <chrono>
 #include <fstream>
-#include <sstream>
-
 namespace vbs {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-solver::solver(environment& env)
+solver::solver(environment &env)
     : sharedConfig_(env.getConfig()),
       sharedVisibilityField_(env.getVisibilityField()),
       sharedSpeedField_(env.getSpeedField()) {
@@ -77,13 +75,38 @@ void solver::visibilityBasedSolver() {
   double d = 0;
   int x = 0, y = 0, neighbour_x = 0, neighbour_y = 0;
 
-  auto& initial_frontline = sharedConfig_->initialFrontline;
-  // Fill in data from initial frontline
+  auto &initial_frontline = sharedConfig_->initialFrontline;
+
+  if (initial_frontline.size() % 2 != 0) {
+    std::cout
+        << "############################## Visibility-based solver output "
+           "##############################"
+        << std::endl;
+    std::cout << "Initial frontline must be of size that is a multiple of 2 "
+                 "for visibility-based solver"
+              << std::endl;
+    return;
+  }
+
   for (size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i];
     y = ny_ - 1 - initial_frontline[i + 1];
-    // Check if all starting positions are valid
+    // check if starting positions are inside the map
+    if (x >= nx_ || y >= ny_) {
+      std::cout
+          << "############################## Visibility-based solver output "
+             "##############################"
+          << std::endl;
+      std::cout << "At least one of the starting positions is outside the map"
+                << std::endl;
+      return;
+    }
+
     if (sharedVisibilityField_->get(x, y) < 1) {
+      std::cout
+          << "############################## Visibility-based solver output "
+             "##############################"
+          << std::endl;
       std::cout << "At least one of the starting positions is invalid/occupied"
                 << std::endl;
       return;
@@ -111,7 +134,7 @@ void solver::visibilityBasedSolver() {
   double distance = 0;
 
   while (openSet_->size() > 0) {
-    auto& current = openSet_->top();
+    auto &current = openSet_->top();
     x = current.x;
     y = current.y;
     openSet_->pop();
@@ -153,7 +176,7 @@ void solver::visibilityBasedSolver() {
 
       auto minimum_element =
           std::min_element(potentialDistances.begin(), potentialDistances.end(),
-                           [](const auto& lhs, const auto& rhs) {
+                           [](const auto &lhs, const auto &rhs) {
                              return lhs.first < rhs.first;
                            });
       distance = minimum_element->first;
@@ -207,18 +230,41 @@ void solver::vStarSearch() {
   int endX = sharedConfig_->target_x;
   int endY = ny_ - 1 - sharedConfig_->target_y;
 
-  // check if target is feasible
+  if (endX >= nx_ || endY >= ny_) {
+    std::cout << "############################## VStar solver output "
+                 "##############################"
+              << std::endl;
+    std::cout << "Target position is outside the map" << std::endl;
+    return;
+  }
+
   if (sharedVisibilityField_->get(endX, endY) < 1) {
+    std::cout << "############################## VStar solver output "
+                 "##############################"
+              << std::endl;
     std::cout << "Target position is invalid/occupied" << std::endl;
     return;
   }
 
-  auto& initial_frontline = sharedConfig_->initialFrontline;
+  auto &initial_frontline = sharedConfig_->initialFrontline;
+  if (initial_frontline.size() != 2) {
+    std::cout << "############################## VStar solver output "
+                 "##############################"
+              << std::endl;
+    std::cout << "Initial frontline must be of size 2 for vStar" << std::endl;
+    return;
+  }
+
   // Fill in data from initial frontline
   for (size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i];
     y = ny_ - 1 - initial_frontline[i + 1];
-    // Check if starting position is valid
+
+    if (x >= nx_ || y >= ny_) {
+      std::cout << "The starting position is outside the map" << std::endl;
+      return;
+    }
+
     if (sharedVisibilityField_->get(x, y) < 1) {
       std::cout << "Starting position is invalid/occupied" << std::endl;
       return;
@@ -251,7 +297,7 @@ void solver::vStarSearch() {
   double distance = 0;
 
   while (openSet_->size() > 0) {
-    auto& current = openSet_->top();
+    auto &current = openSet_->top();
     x = current.x;
     y = current.y;
     if (x == endX && y == endY) {
@@ -307,7 +353,7 @@ void solver::vStarSearch() {
 
       auto minimum_element =
           std::min_element(potentialDistances.begin(), potentialDistances.end(),
-                           [](const auto& lhs, const auto& rhs) {
+                           [](const auto &lhs, const auto &rhs) {
                              return lhs.first < rhs.first;
                            });
       distance = minimum_element->first;
@@ -366,17 +412,48 @@ void solver::aStarSearch() {
   int endX = sharedConfig_->target_x;
   int endY = ny_ - 1 - sharedConfig_->target_y;
 
+  // check if target is inside the map
+  if (endX >= nx_ || endY >= ny_) {
+    std::cout << "############################## AStar solver output "
+                 "##############################"
+              << std::endl;
+    std::cout << "Target position is outside the map" << std::endl;
+    return;
+  }
+
   // check if target is feasible
   if (sharedVisibilityField_->get(endX, endY) < 1) {
+    std::cout << "############################## AStar solver output "
+                 "##############################"
+              << std::endl;
+
     std::cout << "Target position is invalid/occupied" << std::endl;
     return;
   }
 
-  auto& initial_frontline = sharedConfig_->initialFrontline;
+  auto &initial_frontline = sharedConfig_->initialFrontline;
+
+  // To use astar, initial frontline must be of size 2
+  if (initial_frontline.size() != 2) {
+    std::cout << "############################## AStar solver output "
+                 "##############################"
+              << std::endl;
+
+    std::cout << "Initial frontline must be of size 2 for aStar" << std::endl;
+    return;
+  }
+
   // Fill in data from initial frontline
   for (size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i];
     y = ny_ - 1 - initial_frontline[i + 1];
+
+    // check if starting positions are inside the map
+    if (x >= nx_ || y >= ny_) {
+      std::cout << "The starting position is outside the map" << std::endl;
+      return;
+    }
+
     // Check if starting position is valid
     if (sharedVisibilityField_->get(x, y) < 1) {
       std::cout << "Starting position is invalid/occupied" << std::endl;
@@ -399,7 +476,7 @@ void solver::aStarSearch() {
   }
 
   while (openSet_->size() > 0) {
-    auto& current = openSet_->top();
+    auto &current = openSet_->top();
     x = current.x;
     y = current.y;
 
@@ -446,7 +523,7 @@ void solver::aStarSearch() {
 
       g = gScore_->get(x, y) +
           evaluateDistance(x, y, neighbour_x,
-                           neighbour_y);  // neighbour_distances_[j];
+                           neighbour_y); // neighbour_distances_[j];
       if (g >= gScore_->get(neighbour_x, neighbour_y)) {
         continue;
       };
@@ -534,7 +611,7 @@ void solver::computeDistanceFunction() {
   double distance = 0;
 
   while (openSet_->size() > 0) {
-    auto& current = openSet_->top();
+    auto &current = openSet_->top();
     x = current.x;
     y = current.y;
 
@@ -571,7 +648,7 @@ void solver::computeDistanceFunction() {
 
       auto minimum_element =
           std::min_element(potentialDistances.begin(), potentialDistances.end(),
-                           [](const auto& lhs, const auto& rhs) {
+                           [](const auto &lhs, const auto &rhs) {
                              return lhs.first < rhs.first;
                            });
       distance = minimum_element->first;
@@ -619,9 +696,10 @@ void solver::computeDistanceFunction() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<size_t>& solver::queuePotentialSources(
-    std::vector<size_t>& potentialSources, const int neighbour_x,
-    const int neighbour_y) const {
+std::vector<size_t> &
+solver::queuePotentialSources(std::vector<size_t> &potentialSources,
+                              const int neighbour_x,
+                              const int neighbour_y) const {
   size_t potentialSource_x = 0, potentialSource_y = 0, lightSource_num = 0;
   potentialSources.clear();
   // Queue sources from updated neighbours of neighbour
@@ -650,9 +728,9 @@ std::vector<size_t>& solver::queuePotentialSources(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<std::pair<double, size_t>>& solver::getPotentialDistances(
-    const std::vector<size_t>& potentialSources,
-    std::vector<std::pair<double, size_t>>& potentialDistances,
+std::vector<std::pair<double, size_t>> &solver::getPotentialDistances(
+    const std::vector<size_t> &potentialSources,
+    std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
   size_t lightSource_x = 0, lightSource_y = 0, potentialSource = 0;
   double distance = 0;
@@ -681,9 +759,9 @@ std::vector<std::pair<double, size_t>>& solver::getPotentialDistances(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<std::pair<double, size_t>>& solver::getPotentialDistancesSpeedField(
-    const std::vector<size_t>& potentialSources,
-    std::vector<std::pair<double, size_t>>& potentialDistances,
+std::vector<std::pair<double, size_t>> &solver::getPotentialDistancesSpeedField(
+    const std::vector<size_t> &potentialSources,
+    std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
   size_t lightSource_x = 0, lightSource_y = 0, potentialSource = 0;
   double distance = 0;
@@ -716,7 +794,7 @@ void solver::createNewPivot(const int x, const int y, const int neighbour_x,
                             const int neighbour_y) {
   int pivot_neighbour_x, pivot_neighbour_y;
   // Pushback parent as a new lightSource
-  lightSources_[nb_of_sources_] = std::make_pair(x, y);  // {x, y};
+  lightSources_[nb_of_sources_] = std::make_pair(x, y); // {x, y};
   // Pusback pivot & update light source visibility
   visibilityHashMap_[y + nx_ * x + ny_ * nx_ * nb_of_sources_] = lightStrength_;
   // Update maps of new pivot_
@@ -738,9 +816,9 @@ void solver::createNewPivot(const int x, const int y, const int neighbour_x,
                               ny_ * nx_ * nb_of_sources_);
   }
   cameFrom_->set(neighbour_x, neighbour_y, nb_of_sources_);
-  gScore_->set(
-      neighbour_x, neighbour_y,
-      gScore_->get(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y));
+  gScore_->set(neighbour_x, neighbour_y,
+               gScore_->get(x, y) +
+                   evaluateDistance(x, y, neighbour_x, neighbour_y));
   ++nb_of_sources_;
 }
 
@@ -919,8 +997,8 @@ void solver::updatePointVisibility(const size_t lightSourceNumber,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::reconstructPath(const Node& current,
-                             const std::string& methodName) {
+void solver::reconstructPath(const Node &current,
+                             const std::string &methodName) {
   std::vector<point> resultingPath;
   int x = current.x, y = current.y;
   double t = cameFrom_->get(x, y);
@@ -963,8 +1041,8 @@ void solver::reconstructPath(const Node& current,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::saveImageWithPath(const std::vector<point>& path,
-                               const std::string& methodName) {
+void solver::saveImageWithPath(const std::vector<point> &path,
+                               const std::string &methodName) {
   sf::Image image;
   image = *uniqueLoadedImage_;
   sf::Color color;
@@ -997,6 +1075,33 @@ void solver::saveImageWithPath(const std::vector<point>& path,
       }
     }
   }
+  // add green ball for the start location and red ball for the target
+  // balls are of radius 5 pixels that must be inside the map
+  // Iterate through pixels around the ball in a circle
+  // starting position is from initialFrontline
+  int radius = 20;
+  int x = sharedConfig_->initialFrontline[0];
+  int y = ny_ - 1 - sharedConfig_->initialFrontline[1];
+  for (int i = -radius; i <= radius; ++i) {
+    for (int j = -radius; j <= radius; ++j) {
+      if (i * i + j * j <= radius * radius) {
+        if (x + i >= 0 && x + i < nx_ && y + j >= 0 && y + j < ny_) {
+          image.setPixel(x + i, y + j, color.Green);
+        }
+      }
+    }
+  }
+  x = sharedConfig_->target_x;
+  y = ny_ - 1 - sharedConfig_->target_y;
+  for (int i = -radius; i <= radius; ++i) {
+    for (int j = -radius; j <= radius; ++j) {
+      if (i * i + j * j <= radius * radius) {
+        if (x + i >= 0 && x + i < nx_ && y + j >= 0 && y + j < ny_) {
+          image.setPixel(x + i, y + j, color.Red);
+        }
+      }
+    }
+  }
   std::string imageName = "output/" + methodName + ".png";
   image.saveToFile(imageName);
 }
@@ -1004,8 +1109,8 @@ void solver::saveImageWithPath(const std::vector<point>& path,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::saveResults(const std::vector<point>& resultingPath,
-                         const std::string& methodName) {
+void solver::saveResults(const std::vector<point> &resultingPath,
+                         const std::string &methodName) {
   namespace fs = std::filesystem;
 
   // Define the path to the output file
@@ -1030,7 +1135,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
                   << std::endl;
         return;
       }
-      std::ostream& os = of;
+      std::ostream &os = of;
       for (int j = ny_ - 1; j >= 0; --j) {
         for (size_t i = 0; i < nx_; ++i) {
           os << gScore_->get(i, j) << " ";
@@ -1051,7 +1156,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
       std::cerr << "Failed to open output file " << outputFilePath << std::endl;
       return;
     }
-    std::ostream& os = of;
+    std::ostream &os = of;
     for (int j = ny_ - 1; j >= 0; --j) {
       for (size_t i = 0; i < nx_; ++i) {
         os << gScore_->get(i, j) << " ";
@@ -1071,7 +1176,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
                   << std::endl;
         return;
       }
-      std::ostream& os1 = of1;
+      std::ostream &os1 = of1;
       for (int j = ny_ - 1; j >= 0; --j) {
         for (size_t i = 0; i < nx_; ++i) {
           os1 << cameFrom_->get(i, j) << " ";
@@ -1092,7 +1197,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
                   << std::endl;
         return;
       }
-      std::ostream& os = of3;
+      std::ostream &os = of3;
       for (size_t i = 0; i < nb_of_sources_; ++i) {
         os << lightSources_[i].first << " "
            << ny_ - 1 - lightSources_[i].second;
@@ -1114,7 +1219,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
       std::cerr << "Failed to open output file " << outputFilePath << std::endl;
       return;
     }
-    std::ostream& os = of;
+    std::ostream &os = of;
     for (size_t i = 0; i < resultingPath.size(); ++i) {
       os << resultingPath[i].first << " " << ny_ - 1 - resultingPath[i].second;
       os << "\n";
@@ -1133,7 +1238,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
       std::cerr << "Failed to open output file " << outputFilePath << std::endl;
       return;
     }
-    std::ostream& os = of1;
+    std::ostream &os = of1;
     for (int j = ny_ - 1; j >= 0; --j) {
       for (size_t i = 0; i < nx_; ++i) {
         os << gScore_->get(i, j) << " ";
@@ -1154,7 +1259,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
       std::cerr << "Failed to open output file " << outputFilePath << std::endl;
       return;
     }
-    std::ostream& os = of2;
+    std::ostream &os = of2;
     for (int j = ny_ - 1; j >= 0; --j) {
       for (size_t i = 0; i < nx_; ++i) {
         os << fScore_->get(i, j) << " ";
@@ -1175,7 +1280,7 @@ void solver::saveResults(const std::vector<point>& resultingPath,
       std::cerr << "Failed to open output file " << outputFilePath << std::endl;
       return;
     }
-    std::ostream& os = of3;
+    std::ostream &os = of3;
     for (size_t i = 0; i < nb_of_sources_; ++i) {
       os << lightSources_[i].first << " " << ny_ - 1 - lightSources_[i].second;
       os << "\n";
@@ -1187,4 +1292,4 @@ void solver::saveResults(const std::vector<point>& resultingPath,
   }
 }
 
-}  // namespace vbs
+} // namespace vbs
