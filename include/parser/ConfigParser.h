@@ -42,20 +42,23 @@ struct Config {
   bool savePath = true;
   bool saveDistanceFunction = true;
   bool silent = false;
+  bool saveVisibilityBasedSolverImage = true;
+  int ballRadius = 5;
+  int number_of_contour_lines = 50;
 };
 
 class ConfigParser {
- public:
+public:
   ConfigParser(){};
-  bool parse(const std::string& filename);
-  inline const Config& getConfig() const { return config_; };
+  bool parse(const std::string &filename);
+  inline const Config &getConfig() const { return config_; };
   // Deconstructor
   ~ConfigParser() = default;
 
- private:
+private:
   Config config_;
-  std::vector<int> parseVectorString(const std::string& str);
+  std::vector<int> parseVectorString(const std::string &str);
 };
 
-}  // namespace vbs
-#endif  // CONFIG_PARSER_H
+} // namespace vbs
+#endif // CONFIG_PARSER_H

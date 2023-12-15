@@ -215,6 +215,9 @@ void solver::visibilityBasedSolver() {
   if (sharedConfig_->saveResults) {
     saveResults({}, "visibilityBased");
   }
+  if (sharedConfig_->saveVisibilityBasedSolverImage) {
+    saveVisibilityBasedSolverImage(gScore_);
+  }
 }
 
 /******************************************************************************************************/
@@ -1075,11 +1078,7 @@ void solver::saveImageWithPath(const std::vector<point> &path,
       }
     }
   }
-  // add green ball for the start location and red ball for the target
-  // balls are of radius 5 pixels that must be inside the map
-  // Iterate through pixels around the ball in a circle
-  // starting position is from initialFrontline
-  int radius = 20;
+  int radius = sharedConfig_->ballRadius;
   int x = sharedConfig_->initialFrontline[0];
   int y = ny_ - 1 - sharedConfig_->initialFrontline[1];
   for (int i = -radius; i <= radius; ++i) {
@@ -1104,6 +1103,100 @@ void solver::saveImageWithPath(const std::vector<point> &path,
   }
   std::string imageName = "output/" + methodName + ".png";
   image.saveToFile(imageName);
+}
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+void solver::saveVisibilityBasedSolverImage(
+    const std::unique_ptr<Field<double>> &gScore) {
+  const int width = nx_;
+  const int height = ny_;
+
+  sf::Image image;
+  image.create(width, height);
+
+  double minVal = std::numeric_limits<double>::max();
+  double maxVal = std::numeric_limits<double>::min();
+
+  // Find min and max values in gScore for normalization
+  for (int i = 0; i < width; ++i) {
+    for (int j = 0; j < height; ++j) {
+      double val = gScore->get(i, j);
+      if (val == std::numeric_limits<double>::infinity())
+        continue;
+      if (val < minVal)
+        minVal = val;
+      if (val > maxVal)
+        maxVal = val;
+    }
+  }
+  // Define color scale mapping function
+  auto getColor = [&](double value) {
+    double normalizedValue = (value - minVal) / (maxVal - minVal);
+    // Map normalizedvalue to colors (dark blue to light blue to light red to
+    // dark red)
+    int blueComponent = static_cast<int>(255 * (1 - normalizedValue));
+    int redComponent = static_cast<int>(255 * normalizedValue);
+    int greenComponent = 0;
+
+    return sf::Color(redComponent, greenComponent, blueComponent);
+  };
+
+  // Generate the image
+  for (int i = 0; i < width; ++i) {
+    for (int j = 0; j < height; ++j) {
+      if (sharedVisibilityField_->get(i, j) < 1) {
+        image.setPixel(i, j, sf::Color::Black);
+      } else {
+        double value = gScore->get(i, j);
+        sf::Color color = getColor(value);
+        image.setPixel(i, j, color);
+      }
+    }
+  }
+
+  // color all initial frontline points as green circles with radius 10
+  sf::Color color;
+  color.a = 1;
+  int x0, y0;
+  int radius = 10;
+  for (size_t i = 0; i < sharedConfig_->initialFrontline.size(); i += 2) {
+    x0 = sharedConfig_->initialFrontline[i];
+    y0 = ny_ - 1 - sharedConfig_->initialFrontline[i + 1];
+    for (int i = -radius; i <= radius; ++i) {
+      for (int j = -radius; j <= radius; ++j) {
+        if (i * i + j * j <= radius * radius) {
+          if (x0 + i >= 0 && x0 + i < nx_ && y0 + j >= 0 && y0 + j < ny_) {
+            image.setPixel(x0 + i, y0 + j, color.Green);
+          }
+        }
+      }
+    }
+  }
+
+  // compute the step size based on the max and min values
+  int number_of_contour_lines = sharedConfig_->number_of_contour_lines;
+  double stepSize = (maxVal - minVal) / number_of_contour_lines;
+
+  std::vector<double> contourLevels;
+  for (double level = minVal; level <= maxVal; level += stepSize) {
+    contourLevels.push_back(level);
+  }
+  // Draw contour lines on the image
+  for (double level : contourLevels) {
+    for (int i = 0; i < width; ++i) {
+      for (int j = 0; j < height; ++j) {
+        double value = gScore->get(i, j);
+        if (std::abs(value - level) <= 1) {
+          image.setPixel(i, j, sf::Color::Black);
+        }
+      }
+    }
+  }
+
+  std::string outputPath = "./output/visibilityBasedSolver.png";
+  image.saveToFile(outputPath);
 }
 
 /******************************************************************************************************/

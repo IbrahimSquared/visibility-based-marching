@@ -16,15 +16,15 @@ namespace vbs {
 struct Node {
   int x, y;
   double f;
-  bool operator<(const Node& other) const { return f > other.f; }
+  bool operator<(const Node &other) const { return f > other.f; }
 };
 
 class solver {
- public:
+public:
   using Map = ska::flat_hash_map<size_t, double>;
   using point = std::pair<size_t, size_t>;
 
-  explicit solver(environment& env);
+  explicit solver(environment &env);
 
   // Deconstructor
   ~solver() = default;
@@ -37,9 +37,9 @@ class solver {
   // Get global iterator (number of iterations that had to be completed)
   inline int getNbOfIterations() const { return nb_of_iterations_; };
 
- private:
+private:
   void reset();
-  void reconstructPath(const Node& current, const std::string& methodName);
+  void reconstructPath(const Node &current, const std::string &methodName);
   inline int indexAt(const size_t x, const size_t y) const {
     return x + y * nx_;
   };
@@ -52,25 +52,25 @@ class solver {
   /*!
    * @brief queues sources
    */
-  inline std::vector<size_t>& queuePotentialSources(
-      std::vector<size_t>& potentialSources, const int neighbour_x,
-      const int neighbour_y) const;
+  inline std::vector<size_t> &
+  queuePotentialSources(std::vector<size_t> &potentialSources,
+                        const int neighbour_x, const int neighbour_y) const;
 
   /*!
    * @brief gets distances
    */
-  inline std::vector<std::pair<double, size_t>>& getPotentialDistances(
-      const std::vector<size_t>& potentialSources,
-      std::vector<std::pair<double, size_t>>& potentialDistances,
+  inline std::vector<std::pair<double, size_t>> &getPotentialDistances(
+      const std::vector<size_t> &potentialSources,
+      std::vector<std::pair<double, size_t>> &potentialDistances,
       const int neighbour_x, const int neighbour_y);
 
   /*!
    * @brief gets distances
    */
-  inline std::vector<std::pair<double, size_t>>&
+  inline std::vector<std::pair<double, size_t>> &
   getPotentialDistancesSpeedField(
-      const std::vector<size_t>& potentialSources,
-      std::vector<std::pair<double, size_t>>& potentialDistances,
+      const std::vector<size_t> &potentialSources,
+      std::vector<std::pair<double, size_t>> &potentialDistances,
       const int neighbour_x, const int neighbour_y);
 
   inline double evaluateDistance(const int x1, const int y1, const int x2,
@@ -88,10 +88,12 @@ class solver {
   inline void createNewPivot(const int x, const int y, const int neighbour_x,
                              const int neighbour_y);
 
-  void saveResults(const std::vector<point>& path,
-                   const std::string& methodName);
-  void saveImageWithPath(const std::vector<point>& path,
-                         const std::string& methodName);
+  void saveResults(const std::vector<point> &path,
+                   const std::string &methodName);
+  void saveImageWithPath(const std::vector<point> &path,
+                         const std::string &methodName);
+  void
+  saveVisibilityBasedSolverImage(const std::unique_ptr<Field<double>> &gScore);
 
   /*!
    * @brief Insert to hashmap through a key.
@@ -195,5 +197,5 @@ class solver {
   std::unique_ptr<sf::Image> uniqueLoadedImage_;
 };
 
-}  // namespace vbs
+} // namespace vbs
 #endif
