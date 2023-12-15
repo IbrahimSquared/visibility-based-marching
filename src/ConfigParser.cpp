@@ -107,7 +107,7 @@ bool ConfigParser::parse(const std::string &filename) {
           std::cerr << "It must be a positive integer\n";
           return false;
         }
-        config_.maxWidth = std::stoul(value);
+        config_.maxWidth = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -238,7 +238,7 @@ bool ConfigParser::parse(const std::string &filename) {
     } else if (key == "visibilityThreshold") {
       try {
         config_.visibilityThreshold = std::stod(value);
-        if (config_.visibilityThreshold > 1.0) {
+        if (config_.visibilityThreshold > 1.0 || config_.visibilityThreshold < 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a double between 0 and 1\n";
           return false;
