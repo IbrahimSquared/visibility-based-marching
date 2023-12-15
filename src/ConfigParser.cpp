@@ -6,13 +6,15 @@
 
 namespace vbs {
 
-bool ConfigParser::parse(const std::string& filename) {
+bool ConfigParser::parse(const std::string &filename) {
   std::ifstream file(filename);
   if (!file) {
     std::cerr << "Failed to open " << filename << '\n';
     return false;
   }
-
+  std::cout << "########################### Parsing config file  "
+               "########################## \n";
+  std::cout << "Attempting to parse " << filename << '\n';
   std::string line;
   while (std::getline(file, line)) {
     // Ignore comments and blank lines
@@ -48,48 +50,92 @@ bool ConfigParser::parse(const std::string& filename) {
         }
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be an integer\n";
+        return false;
       }
     } else if (key == "ncols") {
       try {
-        config_.ncols = std::stoul(value);
+        if (std::stoi(value) < 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a positive integer\n";
+          return false;
+        }
+        config_.ncols = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "nrows") {
       try {
-        config_.nrows = std::stoul(value);
+        if (std::stoi(value) < 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a positive integer\n";
+          return false;
+        }
+        config_.nrows = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "nb_of_obstacles") {
       try {
         config_.nb_of_obstacles = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be an integer\n";
+        return false;
       }
     } else if (key == "minWidth") {
       try {
-        config_.minWidth = std::stoul(value);
+        if (std::stoi(value) < 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a positive integer\n";
+          return false;
+        }
+        config_.minWidth = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "maxWidth") {
       try {
+        if (std::stoi(value) < 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a positive integer\n";
+          return false;
+        }
         config_.maxWidth = std::stoul(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "minHeight") {
       try {
-        config_.minHeight = std::stoul(value);
+        if (std::stoi(value) < 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a positive integer\n";
+          return false;
+        }
+        config_.minHeight = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
       }
     } else if (key == "maxHeight") {
       try {
-        config_.maxHeight = std::stoul(value);
+        if (std::stoi(value) < 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a positive integer\n";
+          return false;
+        }
+        config_.maxHeight = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "randomSeed") {
       if (value == "0" || value == "false") {
@@ -98,12 +144,16 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.randomSeed = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "seedValue") {
       try {
         config_.seedValue = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be an integer\n";
+        return false;
       }
     } else if (key == "imagePath") {
       config_.imagePath = value;
@@ -114,6 +164,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.greedy = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "visibilityBasedSolver") {
       if (value == "0" || value == "false") {
@@ -122,6 +174,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.visibilityBasedSolver = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "expandInObstacles") {
       if (value == "0" || value == "false") {
@@ -130,6 +184,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.expandInObstacles = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "vstar") {
       if (value == "0" || value == "false") {
@@ -138,6 +194,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.vstar = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "astar") {
       if (value == "0" || value == "false") {
@@ -146,6 +204,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.astar = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "distanceFunction") {
       if (value == "0" || value == "false") {
@@ -154,6 +214,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.distanceFunction = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "initialFrontline") {
       config_.initialFrontline = parseVectorString(value);
@@ -162,24 +224,37 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.target_x = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "target_y") {
       try {
         config_.target_y = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "visibilityThreshold") {
       try {
         config_.visibilityThreshold = std::stod(value);
+        if (config_.visibilityThreshold > 1.0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a double between 0 and 1\n";
+          return false;
+        }
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive double between 0 and 1\n";
+        return false;
       }
     } else if (key == "speedValue") {
       try {
         config_.speedValue = std::stod(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive double\n";
+        return false;
       }
     } else if (key == "timer") {
       if (value == "0" || value == "false") {
@@ -188,6 +263,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.timer = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveResults") {
       if (value == "0" || value == "false") {
@@ -196,6 +273,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveResults = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveCameFrom") {
       if (value == "0" || value == "false") {
@@ -204,6 +283,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveCameFrom = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveGScore") {
       if (value == "0" || value == "false") {
@@ -212,6 +293,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveGScore = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveLightSources") {
       if (value == "0" || value == "false") {
@@ -220,6 +303,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveLightSources = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveVisibilityField") {
       if (value == "0" || value == "false") {
@@ -228,6 +313,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveVisibilityField = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveSpeedField") {
       if (value == "0" || value == "false") {
@@ -236,6 +323,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveSpeedField = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "savePath") {
       if (value == "0" || value == "false") {
@@ -244,6 +333,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.savePath = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveFScore") {
       if (value == "0" || value == "false") {
@@ -252,6 +343,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveFScore = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "saveDistanceFunction") {
       if (value == "0" || value == "false") {
@@ -260,6 +353,8 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.saveDistanceFunction = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else if (key == "silent") {
       if (value == "0" || value == "false") {
@@ -268,9 +363,12 @@ bool ConfigParser::parse(const std::string& filename) {
         config_.silent = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
       }
     } else {
-      std::cerr << "Invalid key: " << key << '\n';
+      std::cerr << "Invalid/Irrelevant key: " << key << '\n';
+      std::cerr << "Ignoring...\n";
     }
   }
   if (!config_.silent) {
@@ -335,14 +433,13 @@ bool ConfigParser::parse(const std::string& filename) {
               << "saveDistanceFunction: " << config_.saveDistanceFunction
               << std::endl;
   }
-  // Return true if we successfully parsed the config file
   return true;
 }
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<int> ConfigParser::parseVectorString(const std::string& str) {
+std::vector<int> ConfigParser::parseVectorString(const std::string &str) {
   // Remove outer braces
   std::string innerStr = str.substr(1, str.size() - 2);
   // Split string into individual integers
@@ -354,8 +451,8 @@ std::vector<int> ConfigParser::parseVectorString(const std::string& str) {
     result.push_back(std::stoi(token));
     innerStr.erase(0, pos + delimiter.length());
   }
-  result.push_back(std::stoi(innerStr));  // Add the last integer
+  result.push_back(std::stoi(innerStr)); // Add the last integer
   return result;
 }
 
-}  // namespace vbs
+} // namespace vbs
