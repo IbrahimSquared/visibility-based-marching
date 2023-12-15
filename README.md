@@ -8,6 +8,9 @@ Sample marching in a couple of environments: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/AcrossTheCape.png) <br>
 Huge 3201x3201 maze VBM starting from initial wave source (1605, 1605): <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/test_huge_maze.png) <br>
+Sample marching image result generated using SFML in C++: <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/visibilityBasedSolver.png) <br>
+
 
 Sample marching of different distance functions: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/chessboard.png) <br>
