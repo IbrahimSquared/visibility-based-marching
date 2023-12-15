@@ -12,7 +12,7 @@ namespace vbs {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-environment::environment(Config& config)
+environment::environment(Config &config)
     : sharedConfig_(std::make_shared<Config>(config)) {
   if (sharedConfig_->mode == 1) {
     nx_ = sharedConfig_->ncols;
@@ -28,9 +28,13 @@ environment::environment(Config& config)
     }
   } else if (sharedConfig_->mode == 2) {
     // loadMaps(sharedConfig_->imagePath);
-    loadImage(sharedConfig_->imagePath);
-    if (sharedConfig_->saveResults) {
-      saveEnvironment();
+    if (loadImage(sharedConfig_->imagePath)) {
+      if (sharedConfig_->saveResults) {
+        saveEnvironment();
+      }
+    } else {
+      std::cerr << "Failed to load image" << std::endl;
+      return;
     }
   }
 }
@@ -133,7 +137,7 @@ void environment::generateNewEnvironment(size_t ncols, size_t nrows,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void environment::loadMaps(const std::string& filename) {
+void environment::loadMaps(const std::string &filename) {
   std::ifstream input(filename);
   std::vector<std::vector<float>> visibilityField;
   for (std::string line; std::getline(input, line);) {
@@ -165,7 +169,7 @@ void environment::loadMaps(const std::string& filename) {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<float> environment::stringToFloatVector(const std::string& str,
+std::vector<float> environment::stringToFloatVector(const std::string &str,
                                                     char delimiter) {
   std::vector<float> floatVector;
   std::stringstream ss(str);
@@ -179,11 +183,12 @@ std::vector<float> environment::stringToFloatVector(const std::string& str,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void environment::loadImage(const std::string& filename) {
+bool environment::loadImage(const std::string &filename) {
   uniqueLoadedImage_.reset(std::make_unique<sf::Image>().release());
   // Load the image from a file
   if (!uniqueLoadedImage_->loadFromFile(filename)) {
     std::cout << "Error: Failed to load image" << std::endl;
+    return false;
   } else {
     auto size = uniqueLoadedImage_->getSize();
     nx_ = size.x;
@@ -209,6 +214,7 @@ void environment::loadImage(const std::string& filename) {
     }
     std::cout << "Loaded image of dimensions " << nx_ << "x" << ny_
               << " successfully" << std::endl;
+    return true;
   }
 }
 
@@ -244,7 +250,7 @@ void environment::saveEnvironment() {
       std::cerr << "Failed to open output file " << outputFilePath << std::endl;
       return;
     }
-    std::ostream& os = of;
+    std::ostream &os = of;
     for (int j = ny_ - 1; j >= 0; --j) {
       for (size_t i = 0; i < nx_; ++i) {
         os << sharedVisibilityField_->get(i, j) << " ";
@@ -265,7 +271,7 @@ void environment::saveEnvironment() {
       std::cerr << "Failed to open output file " << outputFilePath << std::endl;
       return;
     }
-    std::ostream& os = of;
+    std::ostream &os = of;
     for (size_t i = 0; i < nx_; ++i) {
       for (size_t j = 0; j < ny_; ++j) {
         os << sharedSpeedField_->get(i, j) << " ";
@@ -279,4 +285,4 @@ void environment::saveEnvironment() {
   }
 }
 
-}  // namespace vbs
+} // namespace vbs

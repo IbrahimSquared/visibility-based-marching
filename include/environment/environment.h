@@ -13,12 +13,12 @@ namespace vbs {
 
 // Environment simulator
 class environment {
- public:
+public:
   /*!
    * Constructor.
    * @brief Initialize an environment.
    */
-  explicit environment(Config& config);
+  explicit environment(Config &config);
 
   /*!
    * @brief Generate a random new environment on request. Overwrites previously
@@ -47,25 +47,25 @@ class environment {
    * environment.
    * @param [in] filename Filename.
    */
-  void loadImage(const std::string& filename);
+  bool loadImage(const std::string &filename);
 
-  void loadMaps(const std::string& filename);
-  std::vector<float> stringToFloatVector(const std::string& str,
+  void loadMaps(const std::string &filename);
+  std::vector<float> stringToFloatVector(const std::string &str,
                                          char delimiter);
 
   // Get visibility field shared pointer.
-  inline const auto& getVisibilityField() const {
+  inline const auto &getVisibilityField() const {
     return sharedVisibilityField_;
   };
   // Get speed field shared pointer.
-  inline const auto& getSpeedField() const { return sharedSpeedField_; };
+  inline const auto &getSpeedField() const { return sharedSpeedField_; };
   // Get parsed configuration.
-  inline const auto& getConfig() const { return sharedConfig_; };
+  inline const auto &getConfig() const { return sharedConfig_; };
 
   // Deconstructor
   ~environment() = default;
 
- private:
+private:
   size_t ny_;
   size_t nx_;
   size_t size_;
@@ -86,5 +86,5 @@ class environment {
   void resetEnvironment();
 };
 
-}  // namespace vbs
+} // namespace vbs
 #endif
