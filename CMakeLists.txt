@@ -17,7 +17,7 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 include_directories(include)
-add_executable(vbs src/main.cpp src/environment.cpp src/solver.cpp src/configParser.cpp)
+add_executable(vbs src/main.cpp src/environment.cpp src/solver.cpp src/configparser.cpp)
 
 # Find the SFML package
 find_package(SFML 2.5 COMPONENTS graphics REQUIRED)
