@@ -49,13 +49,19 @@ struct Config {
 
 class ConfigParser {
 public:
-  ConfigParser(){};
+  static ConfigParser &getInstance() {
+    static ConfigParser instance;
+    return instance;
+  }
+
   bool parse(const std::string &filename);
-  inline const Config &getConfig() const { return config_; };
-  // Deconstructor
-  ~ConfigParser() = default;
+  const Config &getConfig() const;
+
+  ConfigParser(ConfigParser const &) = delete;
+  void operator=(ConfigParser const &) = delete;
 
 private:
+  ConfigParser() = default;
   Config config_;
   std::vector<int> parseVectorString(const std::string &str);
 };

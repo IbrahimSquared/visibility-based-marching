@@ -6,8 +6,7 @@
 using namespace vbs;
 
 int main() {
-
-  ConfigParser parser;
+  ConfigParser &parser = ConfigParser::getInstance();
   if (!parser.parse("config/settings.config")) {
     std::cout << "########################### Parsing results: ####"
                  "########################## \n";

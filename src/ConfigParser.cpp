@@ -1,4 +1,4 @@
-#include "parser/configparser.hpp"
+#include "parser/ConfigParser.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -481,5 +481,10 @@ std::vector<int> ConfigParser::parseVectorString(const std::string &str) {
   result.push_back(std::stoi(innerStr)); // Add the last integer
   return result;
 }
+
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+const Config &ConfigParser::getConfig() const { return config_; }
 
 } // namespace vbs
