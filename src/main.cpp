@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "environment/environment.h"
-#include "solver/solver.h"
+#include "environment/environment.hpp"
+#include "solver/solver.hpp"
 
 using namespace vbs;
 
@@ -20,9 +20,9 @@ int main() {
   }
   auto config = parser.getConfig();
 
-  environment env = environment(config);
+  Environment env = Environment(config);
 
-  solver sol = solver(env);
+  Solver sol = Solver(env);
   if (config.vstar) {
     sol.vStarSearch();
   }

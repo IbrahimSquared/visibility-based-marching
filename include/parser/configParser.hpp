@@ -1,5 +1,5 @@
-#ifndef CONFIG_PARSER_H
-#define CONFIG_PARSER_H
+#ifndef CONFIG_PARSER_HPP
+#define CONFIG_PARSER_HPP
 
 #include <string>
 #include <vector>
@@ -20,7 +20,7 @@ struct Config {
   float speedValue = 2.0;
   bool randomSeed = true;
   int seedValue = 0;
-  std::string imagePath = "C:\\...";
+  std::string imagePath = "C:\\..."; // or /home/...
   std::vector<int> initialFrontline;
   int target_x;
   int target_y;
@@ -61,4 +61,4 @@ private:
 };
 
 } // namespace vbs
-#endif // CONFIG_PARSER_H
+#endif // CONFIG_PARSER_HPP

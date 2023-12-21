@@ -1,28 +1,27 @@
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
+#ifndef ENVIRONMENT_HPP
+#define ENVIRONMENT_HPP
 
 #include <SFML/Graphics.hpp>
-#include <filesystem>
 #include <memory>
 #include <vector>
 
-#include "environment/Field.h"
-#include "parser/ConfigParser.h"
+#include "environment/field.hpp"
+#include "parser/configParser.hpp"
 
 namespace vbs {
 
 // Environment simulator
-class environment {
+class Environment {
 public:
   /*!
    * Constructor.
-   * @brief Initialize an environment.
+   * @brief Initialize an Environment.
    */
-  explicit environment(Config &config);
+  explicit Environment(Config &config);
 
   /*!
-   * @brief Generate a random new environment on request. Overwrites previously
-   * generated environment.
+   * @brief Generate a random new Environment on request. Overwrites previously
+   * generated Environment.
    * @param [in] nrows Number of rows.
    * @param [in] ncols Number of cols.
    * @param [in] nb_of_obstacles Number of obstacles.
@@ -37,14 +36,14 @@ public:
                               int max_height, int seedValue = 0);
 
   /*!
-   * @brief Generate a random new environment from parsed config settings.
-   * Overwrites previously generated environment.
+   * @brief Generate a random new Environment from parsed config settings.
+   * Overwrites previously generated Environment.
    */
   void generateNewEnvironmentFromSettings();
 
   /*!
    * @brief Loads image data using SFML. Overwrites previously generated
-   * environment.
+   * Environment.
    * @param [in] filename Filename.
    */
   bool loadImage(const std::string &filename);
@@ -63,7 +62,7 @@ public:
   inline const auto &getConfig() const { return sharedConfig_; };
 
   // Deconstructor
-  ~environment() = default;
+  ~Environment() = default;
 
 private:
   size_t ny_;
@@ -87,4 +86,4 @@ private:
 };
 
 } // namespace vbs
-#endif
+#endif // ENVIRONMENT_HPP

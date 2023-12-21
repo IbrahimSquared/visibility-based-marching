@@ -1,18 +1,17 @@
-#include "environment/environment.h"
-
-#include <algorithm>
+#include "environment/environment.hpp"
 #include <chrono>
-#include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 
 namespace vbs {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-environment::environment(Config &config)
+Environment::Environment(Config &config)
     : sharedConfig_(std::make_shared<Config>(config)) {
   if (sharedConfig_->mode == 1) {
     nx_ = sharedConfig_->ncols;
@@ -42,7 +41,7 @@ environment::environment(Config &config)
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void environment::generateNewEnvironmentFromSettings() {
+void Environment::generateNewEnvironmentFromSettings() {
   resetEnvironment();
   int seedValue = 0;
   if (!sharedConfig_->randomSeed) {
@@ -94,7 +93,7 @@ void environment::generateNewEnvironmentFromSettings() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void environment::generateNewEnvironment(size_t ncols, size_t nrows,
+void Environment::generateNewEnvironment(size_t ncols, size_t nrows,
                                          int nb_of_obstacles, int min_width,
                                          int max_width, int min_height,
                                          int max_height, int seedValue) {
@@ -137,7 +136,7 @@ void environment::generateNewEnvironment(size_t ncols, size_t nrows,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void environment::loadMaps(const std::string &filename) {
+void Environment::loadMaps(const std::string &filename) {
   std::ifstream input(filename);
   std::vector<std::vector<float>> visibilityField;
   for (std::string line; std::getline(input, line);) {
@@ -169,7 +168,7 @@ void environment::loadMaps(const std::string &filename) {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<float> environment::stringToFloatVector(const std::string &str,
+std::vector<float> Environment::stringToFloatVector(const std::string &str,
                                                     char delimiter) {
   std::vector<float> floatVector;
   std::stringstream ss(str);
@@ -183,7 +182,7 @@ std::vector<float> environment::stringToFloatVector(const std::string &str,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-bool environment::loadImage(const std::string &filename) {
+bool Environment::loadImage(const std::string &filename) {
   uniqueLoadedImage_.reset(std::make_unique<sf::Image>().release());
   // Load the image from a file
   if (!uniqueLoadedImage_->loadFromFile(filename)) {
@@ -221,7 +220,7 @@ bool environment::loadImage(const std::string &filename) {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void environment::resetEnvironment() {
+void Environment::resetEnvironment() {
   sharedVisibilityField_ = std::make_unique<Field<double>>(nx_, ny_, 1.0);
   sharedSpeedField_ = std::make_unique<Field<double>>(nx_, ny_, 1.0);
 }
@@ -229,7 +228,7 @@ void environment::resetEnvironment() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void environment::saveEnvironment() {
+void Environment::saveEnvironment() {
   // Define the path to the output file
   std::string outputFilePath = "./output/visibilityField.txt";
   // Check if the directory exists, and create it if it doesn't

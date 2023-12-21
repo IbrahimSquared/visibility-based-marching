@@ -1,13 +1,16 @@
-#include "solver/solver.h"
+#include "solver/solver.hpp"
 
 #include <chrono>
+#include <filesystem>
 #include <fstream>
+#include <iostream>
+
 namespace vbs {
 
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-solver::solver(environment &env)
+Solver::Solver(Environment &env)
     : sharedConfig_(env.getConfig()),
       sharedVisibilityField_(env.getVisibilityField()),
       sharedSpeedField_(env.getSpeedField()) {
@@ -36,7 +39,7 @@ solver::solver(environment &env)
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::reset() {
+void Solver::reset() {
   gScore_ = std::make_unique<Field<double>>(
       nx_, ny_, std::numeric_limits<double>::infinity());
   fScore_ = std::make_unique<Field<double>>(
@@ -67,7 +70,7 @@ void solver::reset() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::visibilityBasedSolver() {
+void Solver::visibilityBasedSolver() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -223,7 +226,7 @@ void solver::visibilityBasedSolver() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::vStarSearch() {
+void Solver::vStarSearch() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -405,7 +408,7 @@ void solver::vStarSearch() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::aStarSearch() {
+void Solver::aStarSearch() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -571,7 +574,7 @@ void solver::aStarSearch() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::computeDistanceFunction() {
+void Solver::computeDistanceFunction() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<int> initial_frontline;
@@ -700,7 +703,7 @@ void solver::computeDistanceFunction() {
 /******************************************************************************************************/
 /******************************************************************************************************/
 std::vector<size_t> &
-solver::queuePotentialSources(std::vector<size_t> &potentialSources,
+Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
                               const int neighbour_x,
                               const int neighbour_y) const {
   size_t potentialSource_x = 0, potentialSource_y = 0, lightSource_num = 0;
@@ -731,7 +734,7 @@ solver::queuePotentialSources(std::vector<size_t> &potentialSources,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<std::pair<double, size_t>> &solver::getPotentialDistances(
+std::vector<std::pair<double, size_t>> &Solver::getPotentialDistances(
     const std::vector<size_t> &potentialSources,
     std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
@@ -762,7 +765,7 @@ std::vector<std::pair<double, size_t>> &solver::getPotentialDistances(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-std::vector<std::pair<double, size_t>> &solver::getPotentialDistancesSpeedField(
+std::vector<std::pair<double, size_t>> &Solver::getPotentialDistancesSpeedField(
     const std::vector<size_t> &potentialSources,
     std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
@@ -793,7 +796,7 @@ std::vector<std::pair<double, size_t>> &solver::getPotentialDistancesSpeedField(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::createNewPivot(const int x, const int y, const int neighbour_x,
+void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
                             const int neighbour_y) {
   int pivot_neighbour_x, pivot_neighbour_y;
   // Pushback parent as a new lightSource
@@ -828,7 +831,7 @@ void solver::createNewPivot(const int x, const int y, const int neighbour_x,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::updatePointVisibility(const size_t lightSourceNumber,
+void Solver::updatePointVisibility(const size_t lightSourceNumber,
                                    const int lightSource_x,
                                    const int lightSource_y, const int x,
                                    const int y) {
@@ -1000,7 +1003,7 @@ void solver::updatePointVisibility(const size_t lightSourceNumber,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::reconstructPath(const Node &current,
+void Solver::reconstructPath(const Node &current,
                              const std::string &methodName) {
   std::vector<point> resultingPath;
   int x = current.x, y = current.y;
@@ -1044,7 +1047,7 @@ void solver::reconstructPath(const Node &current,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::saveImageWithPath(const std::vector<point> &path,
+void Solver::saveImageWithPath(const std::vector<point> &path,
                                const std::string &methodName) {
   sf::Image image;
   image = *uniqueLoadedImage_;
@@ -1108,7 +1111,7 @@ void solver::saveImageWithPath(const std::vector<point> &path,
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::saveVisibilityBasedSolverImage(
+void Solver::saveVisibilityBasedSolverImage(
     const std::unique_ptr<Field<double>> &gScore) {
   const int width = nx_;
   const int height = ny_;
@@ -1202,7 +1205,7 @@ void solver::saveVisibilityBasedSolverImage(
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
-void solver::saveResults(const std::vector<point> &resultingPath,
+void Solver::saveResults(const std::vector<point> &resultingPath,
                          const std::string &methodName) {
   namespace fs = std::filesystem;
 

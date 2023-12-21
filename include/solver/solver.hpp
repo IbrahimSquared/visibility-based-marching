@@ -1,14 +1,11 @@
-#ifndef SOLVER_H
-#define SOLVER_H
+#ifndef SOLVER_HPP
+#define SOLVER_HPP
 
-#include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <queue>
-#include <unordered_map>
 #include <vector>
 
-#include "environment/environment.h"
+#include "environment/environment.hpp"
 #include "flat_hash_map/flat_hash_map.hpp"
 
 namespace vbs {
@@ -19,15 +16,15 @@ struct Node {
   bool operator<(const Node &other) const { return f > other.f; }
 };
 
-class solver {
+class Solver {
 public:
   using Map = ska::flat_hash_map<size_t, double>;
   using point = std::pair<size_t, size_t>;
 
-  explicit solver(environment &env);
+  explicit Solver(Environment &env);
 
   // Deconstructor
-  ~solver() = default;
+  ~Solver() = default;
 
   void vStarSearch();
   void aStarSearch();
@@ -198,4 +195,4 @@ private:
 };
 
 } // namespace vbs
-#endif
+#endif // SOLVER_HPP

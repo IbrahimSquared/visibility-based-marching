@@ -6,9 +6,8 @@
 
 namespace vbs {
 
-template <typename T>
-class Field {
- public:
+template <typename T> class Field {
+public:
   using size_t = std::size_t;
   Field() : nx_(0), ny_(0), size_(0), data_(nullptr) {}
 
@@ -30,7 +29,7 @@ class Field {
   const size_t ny() const { return ny_; }
 
   // copy constructor
-  Field(const Field& other)
+  Field(const Field &other)
       : nx_(other.nx_), ny_(other.ny_), size_(other.size_) {
     data_ = std::make_unique<T[]>(size_);
     for (size_t i = 0; i < size_; ++i) {
@@ -38,7 +37,7 @@ class Field {
     }
   }
   // copy assignment
-  Field& operator=(const Field& other) {
+  Field &operator=(const Field &other) {
     if (this != &other) {
       nx_ = other.nx_;
       ny_ = other.ny_;
@@ -52,13 +51,13 @@ class Field {
   }
 
   // move constructor
-  Field(Field&& other) noexcept
+  Field(Field &&other) noexcept
       : nx_(other.nx_), ny_(other.ny_), size_(other.size_) {
     data_ = std::move(other.data_);
   }
 
   // move assignment
-  Field& operator=(Field&& other) noexcept {
+  Field &operator=(Field &&other) noexcept {
     if (this != &other) {
       nx_ = other.nx_;
       ny_ = other.ny_;
@@ -70,13 +69,13 @@ class Field {
 
   ~Field() = default;
 
- private:
+private:
   size_t nx_;
   size_t ny_;
   size_t size_;
   std::unique_ptr<T[]> data_;
 };
 
-}  // namespace vbs
+} // namespace vbs
 
-#endif  // FIELD_H
+#endif // FIELD_H

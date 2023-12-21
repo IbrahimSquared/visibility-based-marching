@@ -1,4 +1,4 @@
-#include "parser/ConfigParser.h"
+#include "parser/configParser.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -238,7 +238,8 @@ bool ConfigParser::parse(const std::string &filename) {
     } else if (key == "visibilityThreshold") {
       try {
         config_.visibilityThreshold = std::stod(value);
-        if (config_.visibilityThreshold > 1.0 || config_.visibilityThreshold < 0) {
+        if (config_.visibilityThreshold > 1.0 ||
+            config_.visibilityThreshold < 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a double between 0 and 1\n";
           return false;
