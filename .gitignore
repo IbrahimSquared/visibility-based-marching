@@ -39,3 +39,6 @@ output/
 
 # ignore temporary MATLAB files
 *.asv
+
+# ignore cache folder
+.cache/
