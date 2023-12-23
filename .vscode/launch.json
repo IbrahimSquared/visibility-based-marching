@@ -24,7 +24,7 @@
           "ignoreFailures": true
         }
       ],
-      "preLaunchTask": "C/C++: g++.exe build active file"
+      "preLaunchTask": "C/C++: g++.exe build - debug"
     }
   ],
   "version": "2.0.0"
