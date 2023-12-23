@@ -70,11 +70,11 @@ private:
       std::vector<std::pair<double, size_t>> &potentialDistances,
       const int neighbour_x, const int neighbour_y);
 
-  inline double evaluateDistance(const int x1, const int y1, const int x2,
+  inline const double evaluateDistance(const int x1, const int y1, const int x2,
                                  const int y2) const {
     return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
   };
-  inline double evaluateDistanceSpeedField(const int source_x,
+  inline const double evaluateDistanceSpeedField(const int source_x,
                                            const int source_y,
                                            const int target_x,
                                            const int target_y) const {
@@ -91,47 +91,6 @@ private:
                          const std::string &methodName);
   void
   saveVisibilityBasedSolverImage(const std::unique_ptr<Field<double>> &gScore);
-
-  /*!
-   * @brief Insert to hashmap through a key.
-   * @param [in] x position.
-   * @param [in] y position.
-   * @param [in] lightSource_enum number of the light source.
-   * @param [in] value of visibility.
-   */
-  inline void insertIntoVisibilityHashMap(const size_t x, const size_t y,
-                                          const size_t lightSource_num,
-                                          const double value) {
-    visibilityHashMap_[y + nx_ * x + ny_ * nx_ * (lightSource_num + 0)] = value;
-    // visibilityHashMap_.try_emplace(y + nx_ * x + ny_ * nx_ * (lightSource_num
-    // + 0), value);
-  }
-
-  /*!
-   * @brief Return visibility value at a queried key.
-   * @param [in] x position.
-   * @param [in] y position.
-   * @param [in] lightSource_enum number of the light source.
-   */
-  inline double VisibilityHashMapAt(const size_t x, const size_t y,
-                                    const size_t lightSource_num) const {
-    return visibilityHashMap_.at(y + nx_ * x +
-                                 ny_ * nx_ * (lightSource_num + 0));
-  };
-
-  /*!
-   * @brief Check if a key exists in hashmap.
-   * @param [in] x position.
-   * @param [in] y position.
-   * @param [in] lightSource_enum number of the light source.
-   */
-  inline bool ExistsInVisibilityHashMap(const size_t x, const size_t y,
-                                        const size_t lightSource_num) const {
-    return visibilityHashMap_.count(y + nx_ * x +
-                                    ny_ * nx_ * (lightSource_num + 0));
-    // return visibilityHashMap_.contains(y + nx_ * x + ny_ * nx_ *
-    // (lightSource_num + 0));
-  };
 
   /*!
    * @brief Updates accessibility/visibility to a point using PDE advection.
