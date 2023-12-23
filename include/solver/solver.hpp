@@ -105,6 +105,11 @@ private:
                              const int lightSource_x, const int lightSource_y,
                              const int x, const int y);
 
+                             
+  inline const int hashFunction(const int x, const int y, const int lightSourceNumber) const {
+    return y + nx_ * x + ny_ * nx_ * lightSourceNumber;
+  }
+
   std::shared_ptr<Field<double>> sharedVisibilityField_;
   std::shared_ptr<Field<double>> sharedSpeedField_;
 
