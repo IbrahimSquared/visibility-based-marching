@@ -851,7 +851,6 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
       v = visibilityHashMap_.at(key);
     } else {
       key = hashFunction(x,y+1, lightSourceNumber);
-      ;
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x, y + 1);
