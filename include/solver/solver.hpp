@@ -71,13 +71,13 @@ private:
       const int neighbour_x, const int neighbour_y);
 
   inline const double evaluateDistance(const int x1, const int y1, const int x2,
-                                 const int y2) const {
+                                       const int y2) const {
     return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
   };
   inline const double evaluateDistanceSpeedField(const int source_x,
-                                           const int source_y,
-                                           const int target_x,
-                                           const int target_y) const {
+                                                 const int source_y,
+                                                 const int target_x,
+                                                 const int target_y) const {
     return sqrt((double)(source_x - target_x) * (source_x - target_x) +
                 (source_y - target_y) * (source_y - target_y)) *
            sharedSpeedField_->get(target_x, target_y);
@@ -105,8 +105,9 @@ private:
                              const int lightSource_x, const int lightSource_y,
                              const int x, const int y);
 
-  inline const int hashFunction(const int x, const int y, const int lightSourceNumber) const {
-    const auto key = y + nx_ * x  + nx_ * ny_ * lightSourceNumber;
+  inline const int hashFunction(const int x, const int y,
+                                const int lightSourceNumber) const {
+    const auto key = y + nx_ * x + nx_ * ny_ * lightSourceNumber;
     return key;
   }
 

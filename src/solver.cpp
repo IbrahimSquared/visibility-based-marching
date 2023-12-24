@@ -7,6 +7,11 @@
 
 namespace vbs {
 
+template <typename T> auto durationInMicroseconds(T start, T end) {
+  return std::chrono::duration_cast<std::chrono::microseconds>(end - start)
+      .count();
+}
+
 /******************************************************************************************************/
 /******************************************************************************************************/
 /******************************************************************************************************/
@@ -164,7 +169,8 @@ void Solver::visibilityBasedSolver() {
           openSet_->push(Node{neighbour_x, neighbour_y,
                               gScore_->get(neighbour_x, neighbour_y)});
           const auto key = hashFunction(x, y, nb_of_sources_);
-          visibilityHashMap_[key] = sharedVisibilityField_->get(neighbour_x, neighbour_y);
+          visibilityHashMap_[key] =
+              sharedVisibilityField_->get(neighbour_x, neighbour_y);
           ;
         }
         cameFrom_->set(neighbour_x, neighbour_y, cameFrom_->get(x, y));
@@ -199,15 +205,14 @@ void Solver::visibilityBasedSolver() {
   };
 
   auto stopTime = std::chrono::high_resolution_clock::now();
-  auto executionDuration =
-      std::chrono::duration_cast<std::chrono::microseconds>(stopTime -
-                                                            startTime);
+  auto executionDuration = durationInMicroseconds(startTime, stopTime);
+
   if (!sharedConfig_->silent) {
     std::cout << "############################## Visibility-based solver "
                  "output ##############################"
               << std::endl;
     if (sharedConfig_->timer) {
-      std::cout << "Execution time in us: " << executionDuration.count() << "us"
+      std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
       std::cout << "Load factor: " << visibilityHashMap_.load_factor()
                 << std::endl;
@@ -308,9 +313,7 @@ void Solver::vStarSearch() {
     y = current.y;
     if (x == endX && y == endY) {
       auto stopTime = std::chrono::high_resolution_clock::now();
-      auto executionDuration =
-          std::chrono::duration_cast<std::chrono::microseconds>(stopTime -
-                                                                startTime);
+      auto executionDuration = durationInMicroseconds(startTime, stopTime);
 
       if (sharedConfig_->silent) {
         return;
@@ -322,7 +325,7 @@ void Solver::vStarSearch() {
       if (!sharedConfig_->timer) {
         return;
       }
-      std::cout << "Execution time in us: " << executionDuration.count() << "us"
+      std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
       std::cout << "Load factor: " << visibilityHashMap_.load_factor()
                 << std::endl;
@@ -386,16 +389,15 @@ void Solver::vStarSearch() {
   }
 
   auto stopTime = std::chrono::high_resolution_clock::now();
-  auto executionDuration =
-      std::chrono::duration_cast<std::chrono::microseconds>(stopTime -
-                                                            startTime);
+  auto executionDuration = durationInMicroseconds(startTime, stopTime);
+
   if (!sharedConfig_->silent) {
     std::cout << "############################## VStar solver output "
                  "##############################"
               << std::endl;
     if (sharedConfig_->timer) {
       std::cout << "Path could not be found" << std::endl;
-      std::cout << "Execution time in us: " << executionDuration.count() << "us"
+      std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
       std::cout << "Load factor: " << visibilityHashMap_.load_factor()
                 << std::endl;
@@ -410,13 +412,13 @@ void Solver::vStarSearch() {
 /******************************************************************************************************/
 void Solver::aStarSearch() {
   reset();
-  auto startTime = std::chrono::high_resolution_clock::now();
+  const auto startTime = std::chrono::high_resolution_clock::now();
 
   // Init
   double g = 0, h = 0, f = 0;
   int x = 0, y = 0, neighbour_x = 0, neighbour_y = 0;
-  int endX = sharedConfig_->target_x;
-  int endY = ny_ - 1 - sharedConfig_->target_y;
+  const int endX = sharedConfig_->target_x;
+  const int endY = ny_ - 1 - sharedConfig_->target_y;
 
   // check if target is inside the map
   if (endX >= nx_ || endY >= ny_) {
@@ -487,10 +489,9 @@ void Solver::aStarSearch() {
     y = current.y;
 
     if (x == endX && y == endY) {
-      auto stopTime = std::chrono::high_resolution_clock::now();
-      auto executionDuration =
-          std::chrono::duration_cast<std::chrono::microseconds>(stopTime -
-                                                                startTime);
+      const auto stopTime = std::chrono::high_resolution_clock::now();
+      const auto executionDuration =
+          durationInMicroseconds(startTime, stopTime);
 
       if (sharedConfig_->silent) {
         return;
@@ -502,7 +503,7 @@ void Solver::aStarSearch() {
       if (!sharedConfig_->timer) {
         return;
       }
-      std::cout << "Execution time in us: " << executionDuration.count() << "us"
+      std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
       std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       reconstructPath(current, "astar");
@@ -554,16 +555,15 @@ void Solver::aStarSearch() {
   };
 
   auto stopTime = std::chrono::high_resolution_clock::now();
-  auto executionDuration =
-      std::chrono::duration_cast<std::chrono::microseconds>(stopTime -
-                                                            startTime);
+  auto executionDuration = durationInMicroseconds(startTime, stopTime);
+
   if (!sharedConfig_->silent) {
     std::cout << "############################## AStar Solver output "
                  "##############################"
               << std::endl;
     if (sharedConfig_->timer) {
       std::cout << "Path could not be found" << std::endl;
-      std::cout << "Execution time in us: " << executionDuration.count() << "us"
+      std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
       std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       reconstructPath({}, "astar");
@@ -681,16 +681,15 @@ void Solver::computeDistanceFunction() {
   };
 
   auto stopTime = std::chrono::high_resolution_clock::now();
-  auto executionDuration =
-      std::chrono::duration_cast<std::chrono::microseconds>(stopTime -
-                                                            startTime);
+  auto executionDuration = durationInMicroseconds(startTime, stopTime);
+
   if (!sharedConfig_->silent) {
     std::cout << "############################## Distance function computation "
                  "output ##############################"
               << std::endl;
     if (sharedConfig_->timer) {
       std::cout << "Constructed distance function" << std::endl;
-      std::cout << "Execution time in us: " << executionDuration.count() << "us"
+      std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
     }
   }
@@ -815,7 +814,8 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
     // Update neighbour visibility
     updatePointVisibility(nb_of_sources_, x, y, pivot_neighbour_x,
                           pivot_neighbour_y);
-    const auto key = hashFunction(pivot_neighbour_x, pivot_neighbour_y, nb_of_sources_);
+    const auto key =
+        hashFunction(pivot_neighbour_x, pivot_neighbour_y, nb_of_sources_);
   }
   cameFrom_->set(neighbour_x, neighbour_y, nb_of_sources_);
   gScore_->set(neighbour_x, neighbour_y,
@@ -843,14 +843,14 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
 
   if (x == lightSource_x) {
     if (y - lightSource_y > 0) {
-      key = hashFunction(x, y-1, lightSourceNumber);
+      key = hashFunction(x, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x, y - 1);
       }
       v = visibilityHashMap_.at(key);
     } else {
-      key = hashFunction(x,y+1, lightSourceNumber);
+      key = hashFunction(x, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x, y + 1);
@@ -859,14 +859,14 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
     }
   } else if (y == lightSource_y) {
     if (x - lightSource_x > 0) {
-      key = hashFunction(x-1,y, lightSourceNumber);
+      key = hashFunction(x - 1, y, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x - 1, y);
       }
       v = visibilityHashMap_.at(key);
     } else {
-      key = hashFunction(x+1,y, lightSourceNumber);
+      key = hashFunction(x + 1, y, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x + 1, y);
@@ -876,7 +876,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
   } else {
     // Q1
     if ((x - lightSource_x > 0) && (y - lightSource_y > 0)) {
-      key = hashFunction(x-1, y-1, lightSourceNumber);
+      key = hashFunction(x - 1, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x - 1, y - 1);
@@ -884,7 +884,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
       if (x - lightSource_x == y - lightSource_y) {
         v = visibilityHashMap_.at(key);
       } else if (x - lightSource_x < y - lightSource_y) {
-        const auto key_1 = hashFunction(x, y-1, lightSourceNumber);
+        const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                                 x, y - 1);
@@ -893,7 +893,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (x - lightSource_x > y - lightSource_y) {
-        const auto key_2 = hashFunction(x-1,y, lightSourceNumber);
+        const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                                 x - 1, y);
@@ -905,7 +905,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
     }
     // Q2
     else if ((x - lightSource_x > 0) && (y - lightSource_y < 0)) {
-      key = hashFunction(x-1, y+1, lightSourceNumber);
+      key = hashFunction(x - 1, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x - 1, y + 1);
@@ -913,7 +913,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
       if (x - lightSource_x == lightSource_y - y) {
         v = visibilityHashMap_.at(key);
       } else if (x - lightSource_x < lightSource_y - y) {
-        const auto key_1 = hashFunction(x,y+1, lightSourceNumber);
+        const auto key_1 = hashFunction(x, y + 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                                 x, y + 1);
@@ -922,7 +922,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (x - lightSource_x > lightSource_y - y) {
-        const auto key_2 = hashFunction(x-1,y, lightSourceNumber);
+        const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                                 x - 1, y);
@@ -934,7 +934,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
     }
     // Q3
     else if ((x - lightSource_x < 0) && (y - lightSource_y < 0)) {
-      key = hashFunction(x+1, y+1, lightSourceNumber);
+      key = hashFunction(x + 1, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x + 1, y + 1);
@@ -951,7 +951,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (lightSource_x - x > lightSource_y - y) {
-        const auto key_2 = hashFunction(x+1,y, lightSourceNumber);
+        const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                                 x + 1, y);
@@ -963,7 +963,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
     }
     // Q4
     else if ((x - lightSource_x < 0) && (y - lightSource_y > 0)) {
-      key = hashFunction(x+1, y-1, lightSourceNumber);
+      key = hashFunction(x + 1, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
         updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                               x + 1, y - 1);
@@ -971,7 +971,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
       if (lightSource_x - x == y - lightSource_y) {
         v = visibilityHashMap_.at(key);
       } else if (lightSource_x - x < y - lightSource_y) {
-        const auto key_1 = hashFunction(x, y-1, lightSourceNumber);
+        const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                                 x, y - 1);
@@ -980,7 +980,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
       } else if (lightSource_x - x > y - lightSource_y) {
-        const auto key_2 = hashFunction(x+1,y, lightSourceNumber);
+        const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
           updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
                                 x + 1, y);
