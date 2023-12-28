@@ -12,9 +12,9 @@ template <typename T> auto durationInMicroseconds(T start, T end) {
       .count();
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 Solver::Solver(Environment &env)
     : sharedConfig_(env.getConfig()),
       sharedVisibilityField_(env.getVisibilityField()),
@@ -41,9 +41,9 @@ Solver::Solver(Environment &env)
   reset();
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::reset() {
   gScore_ = std::make_unique<Field<double>>(
       nx_, ny_, std::numeric_limits<double>::infinity());
@@ -72,9 +72,9 @@ void Solver::reset() {
   visibilityHashMap_.reserve(nx_ * ny_ * 2);
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::visibilityBasedSolver() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
@@ -228,9 +228,9 @@ void Solver::visibilityBasedSolver() {
   }
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::vStarSearch() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
@@ -407,9 +407,9 @@ void Solver::vStarSearch() {
   }
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::aStarSearch() {
   reset();
   const auto startTime = std::chrono::high_resolution_clock::now();
@@ -571,9 +571,9 @@ void Solver::aStarSearch() {
   }
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::computeDistanceFunction() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
@@ -643,11 +643,10 @@ void Solver::computeDistanceFunction() {
       potentialDistances.clear();
       for (int k = 0; k < potentialSources.size(); ++k) {
         int potentialSource = potentialSources[k];
-        int lightSource_x = lightSources_[potentialSource].first;
-        int lightSource_y = lightSources_[potentialSource].second;
-        distance = gScore_->get(lightSource_x, lightSource_y) +
-                   evaluateDistance(lightSource_x, lightSource_y, neighbour_x,
-                                    neighbour_y);
+        int LS_x = lightSources_[potentialSource].first;
+        int LS_y = lightSources_[potentialSource].second;
+        distance = gScore_->get(LS_x, LS_y) +
+                   evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
         potentialDistances.push_back(
             std::pair<double, int>{distance, potentialSource});
       }
@@ -698,9 +697,9 @@ void Solver::computeDistanceFunction() {
   }
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 std::vector<size_t> &
 Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
                               const int neighbour_x,
@@ -730,29 +729,28 @@ Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
   return potentialSources;
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 std::vector<std::pair<double, size_t>> &Solver::getPotentialDistances(
     const std::vector<size_t> &potentialSources,
     std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
-  size_t lightSource_x = 0, lightSource_y = 0, potentialSource = 0;
+  size_t LS_x = 0, LS_y = 0, potentialSource = 0;
   double distance = 0;
   potentialDistances.clear();
   for (size_t k = 0; k < potentialSources.size(); ++k) {
     potentialSource = potentialSources[k];
-    lightSource_x = lightSources_[potentialSource].first;
-    lightSource_y = lightSources_[potentialSource].second;
+    LS_x = lightSources_[potentialSource].first;
+    LS_y = lightSources_[potentialSource].second;
     // update visibility from source
-    updatePointVisibility(potentialSource, lightSource_x, lightSource_y,
-                          neighbour_x, neighbour_y);
+    updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
+                          neighbour_y);
     distance = INFINITY;
     const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
     if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
-      distance = gScore_->get(lightSource_x, lightSource_y) +
-                 evaluateDistance(lightSource_x, lightSource_y, neighbour_x,
-                                  neighbour_y);
+      distance = gScore_->get(LS_x, LS_y) +
+                 evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
     }
     potentialDistances.push_back(
         std::pair<double, int>{distance, potentialSource});
@@ -760,29 +758,29 @@ std::vector<std::pair<double, size_t>> &Solver::getPotentialDistances(
   return potentialDistances;
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 std::vector<std::pair<double, size_t>> &Solver::getPotentialDistancesSpeedField(
     const std::vector<size_t> &potentialSources,
     std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
-  size_t lightSource_x = 0, lightSource_y = 0, potentialSource = 0;
+  size_t LS_x = 0, LS_y = 0, potentialSource = 0;
   double distance = 0;
   potentialDistances.clear();
   for (size_t k = 0; k < potentialSources.size(); ++k) {
     potentialSource = potentialSources[k];
-    lightSource_x = lightSources_[potentialSource].first;
-    lightSource_y = lightSources_[potentialSource].second;
+    LS_x = lightSources_[potentialSource].first;
+    LS_y = lightSources_[potentialSource].second;
     // update visibility from source
-    updatePointVisibility(potentialSource, lightSource_x, lightSource_y,
-                          neighbour_x, neighbour_y);
+    updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
+                          neighbour_y);
     distance = INFINITY;
     const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
     if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
-      distance = gScore_->get(lightSource_x, lightSource_y) +
-                 evaluateDistanceSpeedField(lightSource_x, lightSource_y,
-                                            neighbour_x, neighbour_y);
+      distance =
+          gScore_->get(LS_x, LS_y) +
+          evaluateDistanceSpeedField(LS_x, LS_y, neighbour_x, neighbour_y);
     }
     potentialDistances.push_back(
         std::pair<double, int>{distance, potentialSource});
@@ -790,9 +788,9 @@ std::vector<std::pair<double, size_t>> &Solver::getPotentialDistancesSpeedField(
   return potentialDistances;
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
                             const int neighbour_y) {
   int pivot_neighbour_x, pivot_neighbour_y;
@@ -824,12 +822,11 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
   ++nb_of_sources_;
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::updatePointVisibility(const size_t lightSourceNumber,
-                                   const int lightSource_x,
-                                   const int lightSource_y, const int x,
+                                   const int LS_x, const int LS_y, const int x,
                                    const int y) {
   // Variable initialization
   double v = 0;
@@ -841,151 +838,135 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
     return;
   }
 
-  if (x == lightSource_x) {
-    if (y - lightSource_y > 0) {
+  if (x == LS_x) {
+    if (y - LS_y > 0) {
       key = hashFunction(x, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x, y - 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
       }
       v = visibilityHashMap_.at(key);
     } else {
       key = hashFunction(x, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x, y + 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
       }
       v = visibilityHashMap_.at(key);
     }
-  } else if (y == lightSource_y) {
-    if (x - lightSource_x > 0) {
+  } else if (y == LS_y) {
+    if (x - LS_x > 0) {
       key = hashFunction(x - 1, y, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x - 1, y);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
       }
       v = visibilityHashMap_.at(key);
     } else {
       key = hashFunction(x + 1, y, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x + 1, y);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
       }
       v = visibilityHashMap_.at(key);
     }
   } else {
     // Q1
-    if ((x - lightSource_x > 0) && (y - lightSource_y > 0)) {
+    if ((x - LS_x > 0) && (y - LS_y > 0)) {
       key = hashFunction(x - 1, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x - 1, y - 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y - 1);
       }
-      if (x - lightSource_x == y - lightSource_y) {
+      if (x - LS_x == y - LS_y) {
         v = visibilityHashMap_.at(key);
-      } else if (x - lightSource_x < y - lightSource_y) {
+      } else if (x - LS_x < y - LS_y) {
         const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x, y - 1);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
         }
-        c = static_cast<double>(x - lightSource_x) / (y - lightSource_y);
+        c = static_cast<double>(x - LS_x) / (y - LS_y);
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
-      } else if (x - lightSource_x > y - lightSource_y) {
+      } else if (x - LS_x > y - LS_y) {
         const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x - 1, y);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
         }
-        c = static_cast<double>(y - lightSource_y) / (x - lightSource_x);
+        c = static_cast<double>(y - LS_y) / (x - LS_x);
         double v2 = visibilityHashMap_.at(key_2);
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
     // Q2
-    else if ((x - lightSource_x > 0) && (y - lightSource_y < 0)) {
+    else if ((x - LS_x > 0) && (y - LS_y < 0)) {
       key = hashFunction(x - 1, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x - 1, y + 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y + 1);
       }
-      if (x - lightSource_x == lightSource_y - y) {
+      if (x - LS_x == LS_y - y) {
         v = visibilityHashMap_.at(key);
-      } else if (x - lightSource_x < lightSource_y - y) {
+      } else if (x - LS_x < LS_y - y) {
         const auto key_1 = hashFunction(x, y + 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x, y + 1);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
         }
-        c = static_cast<double>(x - lightSource_x) / (lightSource_y - y);
+        c = static_cast<double>(x - LS_x) / (LS_y - y);
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
-      } else if (x - lightSource_x > lightSource_y - y) {
+      } else if (x - LS_x > LS_y - y) {
         const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x - 1, y);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
         }
-        c = static_cast<double>(lightSource_y - y) / (x - lightSource_x);
+        c = static_cast<double>(LS_y - y) / (x - LS_x);
         double v2 = visibilityHashMap_.at(key_2);
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
     // Q3
-    else if ((x - lightSource_x < 0) && (y - lightSource_y < 0)) {
+    else if ((x - LS_x < 0) && (y - LS_y < 0)) {
       key = hashFunction(x + 1, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x + 1, y + 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y + 1);
       }
-      if (lightSource_x - x == lightSource_y - y) {
+      if (LS_x - x == LS_y - y) {
         v = visibilityHashMap_.at(key);
-      } else if (lightSource_x - x < lightSource_y - y) {
+      } else if (LS_x - x < LS_y - y) {
         const auto key_1 = (y + 1) + nx_ * x + ny_ * nx_ * lightSourceNumber;
         if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x, y + 1);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
         }
-        c = static_cast<double>(lightSource_x - x) / (lightSource_y - y);
+        c = static_cast<double>(LS_x - x) / (LS_y - y);
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
-      } else if (lightSource_x - x > lightSource_y - y) {
+      } else if (LS_x - x > LS_y - y) {
         const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x + 1, y);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
         }
-        c = static_cast<double>(lightSource_y - y) / (lightSource_x - x);
+        c = static_cast<double>(LS_y - y) / (LS_x - x);
         double v2 = visibilityHashMap_.at(key_2);
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
     // Q4
-    else if ((x - lightSource_x < 0) && (y - lightSource_y > 0)) {
+    else if ((x - LS_x < 0) && (y - LS_y > 0)) {
       key = hashFunction(x + 1, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                              x + 1, y - 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y - 1);
       }
-      if (lightSource_x - x == y - lightSource_y) {
+      if (LS_x - x == y - LS_y) {
         v = visibilityHashMap_.at(key);
-      } else if (lightSource_x - x < y - lightSource_y) {
+      } else if (LS_x - x < y - LS_y) {
         const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x, y - 1);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
         }
-        c = static_cast<double>(lightSource_x - x) / (y - lightSource_y);
+        c = static_cast<double>(LS_x - x) / (y - LS_y);
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
-      } else if (lightSource_x - x > y - lightSource_y) {
+      } else if (LS_x - x > y - LS_y) {
         const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, lightSource_x, lightSource_y,
-                                x + 1, y);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
         }
-        c = static_cast<double>(y - lightSource_y) / (lightSource_x - x);
+        c = static_cast<double>(y - LS_y) / (LS_x - x);
         double v2 = visibilityHashMap_.at(key_2);
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
@@ -996,9 +977,9 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
   visibilityHashMap_[key] = v;
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::reconstructPath(const Node &current,
                              const std::string &methodName) {
   std::vector<point> resultingPath;
@@ -1040,9 +1021,9 @@ void Solver::reconstructPath(const Node &current,
   return;
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::saveImageWithPath(const std::vector<point> &path,
                                const std::string &methodName) {
   sf::Image image;
@@ -1104,9 +1085,9 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
   image.saveToFile(imageName);
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::saveVisibilityBasedSolverImage(
     const std::unique_ptr<Field<double>> &gScore) {
   const int width = nx_;
@@ -1198,9 +1179,9 @@ void Solver::saveVisibilityBasedSolverImage(
   image.saveToFile(outputPath);
 }
 
-/******************************************************************************************************/
-/******************************************************************************************************/
-/******************************************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 void Solver::saveResults(const std::vector<point> &resultingPath,
                          const std::string &methodName) {
   namespace fs = std::filesystem;
