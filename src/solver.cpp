@@ -86,35 +86,31 @@ void Solver::visibilityBasedSolver() {
   auto &initial_frontline = sharedConfig_->initialFrontline;
 
   if (initial_frontline.size() % 2 != 0) {
-    std::cout
-        << "############################## Visibility-based solver output "
-           "##############################"
-        << std::endl;
+    std::cout << "###################### Visibility-based solver output "
+                 "######################"
+              << std::endl;
     std::cout << "Initial frontline must be of size that is a multiple of 2 "
                  "for visibility-based solver"
               << std::endl;
     return;
   }
-
   for (size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i];
     y = ny_ - 1 - initial_frontline[i + 1];
     // check if starting positions are inside the map
     if (x >= nx_ || y >= ny_) {
-      std::cout
-          << "############################## Visibility-based solver output "
-             "##############################"
-          << std::endl;
+      std::cout << "###################### Visibility-based solver output "
+                   "######################"
+                << std::endl;
       std::cout << "At least one of the starting positions is outside the map"
                 << std::endl;
       return;
     }
 
     if (sharedVisibilityField_->get(x, y) < 1) {
-      std::cout
-          << "############################## Visibility-based solver output "
-             "##############################"
-          << std::endl;
+      std::cout << "###################### Visibility-based solver output "
+                   "######################"
+                << std::endl;
       std::cout << "At least one of the starting positions is invalid/occupied"
                 << std::endl;
       return;
@@ -207,8 +203,8 @@ void Solver::visibilityBasedSolver() {
   auto executionDuration = durationInMicroseconds(startTime, stopTime);
 
   if (!sharedConfig_->silent) {
-    std::cout << "############################## Visibility-based solver "
-                 "output ##############################"
+    std::cout << "###################### Visibility-based solver output "
+                 "######################"
               << std::endl;
     if (sharedConfig_->timer) {
       std::cout << "Execution time in us: " << executionDuration << "us"
@@ -241,16 +237,16 @@ void Solver::vStarSearch() {
   int endY = ny_ - 1 - sharedConfig_->target_y;
 
   if (endX >= nx_ || endY >= ny_) {
-    std::cout << "############################## VStar solver output "
-                 "##############################"
+    std::cout << "###################### VStar solver output "
+                 "######################"
               << std::endl;
     std::cout << "Target position is outside the map" << std::endl;
     return;
   }
 
   if (sharedVisibilityField_->get(endX, endY) < 1) {
-    std::cout << "############################## VStar solver output "
-                 "##############################"
+    std::cout << "###################### VStar solver output "
+                 "######################"
               << std::endl;
     std::cout << "Target position is invalid/occupied" << std::endl;
     return;
@@ -258,8 +254,8 @@ void Solver::vStarSearch() {
 
   auto &initial_frontline = sharedConfig_->initialFrontline;
   if (initial_frontline.size() != 2) {
-    std::cout << "############################## VStar solver output "
-                 "##############################"
+    std::cout << "###################### VStar solver output "
+                 "######################"
               << std::endl;
     std::cout << "Initial frontline must be of size 2 for vStar" << std::endl;
     return;
@@ -317,8 +313,8 @@ void Solver::vStarSearch() {
       if (sharedConfig_->silent) {
         return;
       }
-      std::cout << "############################## VStar solver output "
-                   "##############################"
+      std::cout << "###################### VStar solver output "
+                   "######################"
                 << std::endl;
       std::cout << "Path found" << std::endl;
       if (!sharedConfig_->timer) {
@@ -390,8 +386,8 @@ void Solver::vStarSearch() {
   auto executionDuration = durationInMicroseconds(startTime, stopTime);
 
   if (!sharedConfig_->silent) {
-    std::cout << "############################## VStar solver output "
-                 "##############################"
+    std::cout << "###################### VStar solver output "
+                 "######################"
               << std::endl;
     if (sharedConfig_->timer) {
       std::cout << "Path could not be found" << std::endl;
@@ -420,8 +416,8 @@ void Solver::aStarSearch() {
 
   // check if target is inside the map
   if (endX >= nx_ || endY >= ny_) {
-    std::cout << "############################## AStar solver output "
-                 "##############################"
+    std::cout << "###################### AStar solver output "
+                 "######################"
               << std::endl;
     std::cout << "Target position is outside the map" << std::endl;
     return;
@@ -429,8 +425,8 @@ void Solver::aStarSearch() {
 
   // check if target is feasible
   if (sharedVisibilityField_->get(endX, endY) < 1) {
-    std::cout << "############################## AStar solver output "
-                 "##############################"
+    std::cout << "###################### AStar solver output "
+                 "######################"
               << std::endl;
 
     std::cout << "Target position is invalid/occupied" << std::endl;
@@ -441,8 +437,8 @@ void Solver::aStarSearch() {
 
   // To use astar, initial frontline must be of size 2
   if (initial_frontline.size() != 2) {
-    std::cout << "############################## AStar solver output "
-                 "##############################"
+    std::cout << "##################### AStar solver output "
+                 "#####################"
               << std::endl;
 
     std::cout << "Initial frontline must be of size 2 for aStar" << std::endl;
@@ -494,8 +490,8 @@ void Solver::aStarSearch() {
       if (sharedConfig_->silent) {
         return;
       }
-      std::cout << "############################## AStar solver output "
-                   "##############################"
+      std::cout << "##################### AStar solver output "
+                   "#####################"
                 << std::endl;
       std::cout << "Path found" << std::endl;
       if (!sharedConfig_->timer) {
@@ -556,8 +552,8 @@ void Solver::aStarSearch() {
   auto executionDuration = durationInMicroseconds(startTime, stopTime);
 
   if (!sharedConfig_->silent) {
-    std::cout << "############################## AStar Solver output "
-                 "##############################"
+    std::cout << "##################### AStar Solver output "
+                 "#####################"
               << std::endl;
     if (sharedConfig_->timer) {
       std::cout << "Path could not be found" << std::endl;
@@ -680,8 +676,8 @@ void Solver::computeDistanceFunction() {
   auto executionDuration = durationInMicroseconds(startTime, stopTime);
 
   if (!sharedConfig_->silent) {
-    std::cout << "############################## Distance function computation "
-                 "output ##############################"
+    std::cout << "##################### Distance function computation "
+                 "output #####################"
               << std::endl;
     if (sharedConfig_->timer) {
       std::cout << "Constructed distance function" << std::endl;
