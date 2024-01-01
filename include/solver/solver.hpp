@@ -49,14 +49,14 @@ private:
   /*!
    * @brief queues sources
    */
-  inline std::vector<size_t> &
-  queuePotentialSources(std::vector<size_t> &potentialSources,
-                        const int neighbour_x, const int neighbour_y) const;
+  inline void queuePotentialSources(std::vector<size_t> &potentialSources,
+                                    const int neighbour_x,
+                                    const int neighbour_y) const;
 
   /*!
    * @brief gets distances
    */
-  inline std::vector<std::pair<double, size_t>> &getPotentialDistances(
+  inline void getPotentialDistances(
       const std::vector<size_t> &potentialSources,
       std::vector<std::pair<double, size_t>> &potentialDistances,
       const int neighbour_x, const int neighbour_y);
@@ -64,8 +64,7 @@ private:
   /*!
    * @brief gets distances
    */
-  inline std::vector<std::pair<double, size_t>> &
-  getPotentialDistancesSpeedField(
+  inline void getPotentialDistancesSpeedField(
       const std::vector<size_t> &potentialSources,
       std::vector<std::pair<double, size_t>> &potentialDistances,
       const int neighbour_x, const int neighbour_y);

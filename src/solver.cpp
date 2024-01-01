@@ -178,10 +178,9 @@ void Solver::visibilityBasedSolver() {
         continue;
       }
 
-      potentialSources =
-          queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
-      potentialDistances = getPotentialDistancesSpeedField(
-          potentialSources, potentialDistances, neighbour_x, neighbour_y);
+      queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
+      getPotentialDistancesSpeedField(potentialSources, potentialDistances,
+                                      neighbour_x, neighbour_y);
 
       auto minimum_element =
           std::min_element(potentialDistances.begin(), potentialDistances.end(),
@@ -355,10 +354,9 @@ void Solver::vStarSearch() {
         continue;
       }
 
-      potentialSources =
-          queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
-      potentialDistances = getPotentialDistances(
-          potentialSources, potentialDistances, neighbour_x, neighbour_y);
+      queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
+      getPotentialDistances(potentialSources, potentialDistances, neighbour_x,
+                            neighbour_y);
 
       auto minimum_element =
           std::min_element(potentialDistances.begin(), potentialDistances.end(),
@@ -638,8 +636,7 @@ void Solver::computeDistanceFunction() {
         continue;
       };
 
-      potentialSources =
-          queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
+      queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
       potentialDistances.clear();
       for (int k = 0; k < potentialSources.size(); ++k) {
         int potentialSource = potentialSources[k];
@@ -700,10 +697,9 @@ void Solver::computeDistanceFunction() {
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-std::vector<size_t> &
-Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
-                              const int neighbour_x,
-                              const int neighbour_y) const {
+inline void Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
+                                          const int neighbour_x,
+                                          const int neighbour_y) const {
   size_t potentialSource_x = 0, potentialSource_y = 0, lightSource_num = 0;
   potentialSources.clear();
   // Queue sources from updated neighbours of neighbour
@@ -726,13 +722,12 @@ Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
       potentialSources.push_back(lightSource_num);
     }
   }
-  return potentialSources;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-std::vector<std::pair<double, size_t>> &Solver::getPotentialDistances(
+void Solver::getPotentialDistances(
     const std::vector<size_t> &potentialSources,
     std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
@@ -755,13 +750,12 @@ std::vector<std::pair<double, size_t>> &Solver::getPotentialDistances(
     potentialDistances.push_back(
         std::pair<double, int>{distance, potentialSource});
   }
-  return potentialDistances;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-std::vector<std::pair<double, size_t>> &Solver::getPotentialDistancesSpeedField(
+void Solver::getPotentialDistancesSpeedField(
     const std::vector<size_t> &potentialSources,
     std::vector<std::pair<double, size_t>> &potentialDistances,
     const int neighbour_x, const int neighbour_y) {
@@ -785,7 +779,6 @@ std::vector<std::pair<double, size_t>> &Solver::getPotentialDistancesSpeedField(
     potentialDistances.push_back(
         std::pair<double, int>{distance, potentialSource});
   }
-  return potentialDistances;
 }
 
 /*****************************************************************************/
