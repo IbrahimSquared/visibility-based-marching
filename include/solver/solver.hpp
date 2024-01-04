@@ -8,7 +8,7 @@
 #include "environment/environment.hpp"
 #include "flat_hash_map/flat_hash_map.hpp"
 
-namespace vbs {
+namespace vbm {
 
 struct Node {
   int x, y;
@@ -158,5 +158,5 @@ private:
   std::unique_ptr<sf::Image> uniqueLoadedImage_;
 };
 
-} // namespace vbs
+} // namespace vbm
 #endif // SOLVER_HPP

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace vbs {
+namespace vbm {
 
 template <typename T> auto durationInMicroseconds(T start, T end) {
   return std::chrono::duration_cast<std::chrono::microseconds>(end - start)
@@ -1354,4 +1354,4 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
   }
 }
 
-} // namespace vbs
+} // namespace vbm

@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <memory>
 
-namespace vbs {
+namespace vbm {
 
 template <typename T> class Field {
 public:
@@ -76,6 +76,6 @@ private:
   std::unique_ptr<T[]> data_;
 };
 
-} // namespace vbs
+} // namespace vbm
 
 #endif // FIELD_H

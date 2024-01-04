@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace vbs {
+namespace vbm {
 
 using size_t = std::size_t;
 
@@ -66,5 +66,5 @@ private:
   std::vector<int> parseVectorString(const std::string &str);
 };
 
-} // namespace vbs
+} // namespace vbm
 #endif // CONFIG_PARSER_HPP

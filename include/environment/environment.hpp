@@ -8,7 +8,7 @@
 #include "environment/field.hpp"
 #include "parser/ConfigParser.hpp"
 
-namespace vbs {
+namespace vbm {
 
 // Environment simulator
 class Environment {
@@ -85,5 +85,5 @@ private:
   void resetEnvironment();
 };
 
-} // namespace vbs
+} // namespace vbm
 #endif // ENVIRONMENT_HPP

@@ -10,7 +10,7 @@ for iFig = 1:numel(FigList)
     end
 end
 
-system('./vbs');
+system('./vbm');
 
 %% Parser - parse settings
 % Open the file for reading
@@ -79,7 +79,7 @@ if settings.saveResults
         set(gca, 'ytick', [-1e6 1e6]);
         set(gca,'LooseInset',get(gca,'TightInset'));
     end
-    %% VBS VBM
+    %% VBM
     if settings.visibilityBasedSolver
         filename_visibilityBased = "output/visibilityBased.txt";
         T_visibilityBased = importdata(filename_visibilityBased, ' ');

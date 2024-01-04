@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(vbs)
+project(vbm)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,9 +17,9 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 include_directories(include)
-add_executable(vbs src/main.cpp src/environment.cpp src/solver.cpp src/ConfigParser.cpp)
+add_executable(vbm src/main.cpp src/environment.cpp src/solver.cpp src/ConfigParser.cpp)
 
 # Find the SFML package
 find_package(SFML 2.5 COMPONENTS graphics REQUIRED)
 # Link the SFML graphics library
-target_link_libraries(vbs PRIVATE sfml-graphics)
+target_link_libraries(vbm PRIVATE sfml-graphics)

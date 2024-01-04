@@ -4,7 +4,7 @@
 #include "solver/solver.hpp"
 
 int main() {
-  vbs::ConfigParser &parser = vbs::ConfigParser::getInstance();
+  vbm::ConfigParser &parser = vbm::ConfigParser::getInstance();
   if (!parser.parse("config/settings.config")) {
     std::cout << "########################### Parsing results: ####"
                  "########################## \n";
@@ -17,9 +17,9 @@ int main() {
   }
   auto config = parser.getConfig();
 
-  vbs::Environment env = vbs::Environment(config);
+  vbm::Environment env = vbm::Environment(config);
 
-  vbs::Solver sol = vbs::Solver(env);
+  vbm::Solver sol = vbm::Solver(env);
   if (config.vstar) {
     sol.vStarSearch();
   }

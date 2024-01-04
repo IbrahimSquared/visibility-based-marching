@@ -1,5 +1,5 @@
 run in debug mode then do the following:
 
-gprof vbs.exe gmon.out | gprof2dot -s -w | dot -Gdpi=400 -Tpng -o profiling_results.png
+gprof vbm.exe gmon.out | gprof2dot -s -w | dot -Gdpi=400 -Tpng -o profiling_results.png
 
 requires gprof2dot in python and some other graphics software that is open source and easy to get that I forgot its name

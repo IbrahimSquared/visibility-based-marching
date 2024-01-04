@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace vbs {
+namespace vbm {
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -490,4 +490,4 @@ std::vector<int> ConfigParser::parseVectorString(const std::string &str) {
 /*****************************************************************************/
 const Config &ConfigParser::getConfig() const { return config_; }
 
-} // namespace vbs
+} // namespace vbm

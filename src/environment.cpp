@@ -6,7 +6,7 @@
 #include <sstream>
 #include <string>
 
-namespace vbs {
+namespace vbm {
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -284,4 +284,4 @@ void Environment::saveEnvironment() {
   }
 }
 
-} // namespace vbs
+} // namespace vbm
