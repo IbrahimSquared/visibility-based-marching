@@ -582,18 +582,15 @@ void Solver::computeDistanceFunction() {
   }
   // Init
   int x = 0, y = 0, neighbour_x = 0, neighbour_y = 0;
-  double g = 0, f = 0;
+  double g = 0;
   // Fill in data from initial frontline
   for (size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i];
     y = initial_frontline[i + 1];
     g = 0;
-    f = g;
-    openSet_->push(Node{x, y, f});
-    inOpenSet_->set(x, y, true);
+    openSet_->push(Node{x, y, g});
 
     gScore_->set(x, y, g);
-    fScore_->set(x, y, f);
     isUpdated_->set(x, y, true);
     cameFrom_->set(x, y, nb_of_sources_);
     lightSources_[nb_of_sources_] = {x, y};
@@ -616,7 +613,6 @@ void Solver::computeDistanceFunction() {
     y = current.y;
 
     openSet_->pop();
-    inOpenSet_->set(x, y, false);
 
     // Expand frontline at current & update neighbours
     for (size_t j = 0; j < 16; j += 2) {
@@ -650,24 +646,10 @@ void Solver::computeDistanceFunction() {
                              return lhs.first < rhs.first;
                            });
       distance = minimum_element->first;
-
-      if (distance == std::numeric_limits<double>::infinity()) {
-        createNewPivot(x, y, neighbour_x, neighbour_y);
-      } else {
-        // use source giving least distance
-        gScore_->set(neighbour_x, neighbour_y, minimum_element->first);
-        cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
-      }
-
-      f = gScore_->get(neighbour_x, neighbour_y);
-      fScore_->set(neighbour_x, neighbour_y, f);
-
-      if (!inOpenSet_->get(neighbour_x, neighbour_y)) {
-        openSet_->push(Node{neighbour_x, neighbour_y, f});
-        inOpenSet_->set(neighbour_x, neighbour_y, true);
-        ;
-      }
-
+      // use source giving least distance
+      gScore_->set(neighbour_x, neighbour_y, distance);
+      cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
+      openSet_->push(Node{neighbour_x, neighbour_y, distance});
       isUpdated_->set(neighbour_x, neighbour_y, true);
     }
   };
