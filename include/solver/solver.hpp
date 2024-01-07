@@ -90,6 +90,7 @@ private:
                          const std::string &methodName);
   void
   saveVisibilityBasedSolverImage(const std::unique_ptr<Field<double>> &gScore);
+  void saveDistanceFunctionImage(const std::unique_ptr<Field<double>> &gScore);
 
   /*!
    * @brief Updates accessibility/visibility to a point using PDE advection.

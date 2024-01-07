@@ -43,6 +43,7 @@ struct Config {
   bool saveDistanceFunction = true;
   bool silent = false;
   bool saveVisibilityBasedSolverImage = true;
+  bool saveDistanceFunctionImage = true;
   int ballRadius = 5;
   int number_of_contour_lines = 50;
 };

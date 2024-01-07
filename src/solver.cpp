@@ -688,6 +688,9 @@ void Solver::computeDistanceFunction() {
   if (sharedConfig_->saveResults) {
     saveResults({}, "distanceFunction");
   }
+  if (sharedConfig_->saveDistanceFunctionImage) {
+    saveDistanceFunctionImage(gScore_);
+  }
 }
 
 /*****************************************************************************/
@@ -1165,6 +1168,81 @@ void Solver::saveVisibilityBasedSolverImage(
   }
 
   std::string outputPath = "./output/visibilityBasedSolver.png";
+  image.saveToFile(outputPath);
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+void Solver::saveDistanceFunctionImage(
+    const std::unique_ptr<Field<double>> &gScore) {
+  const int width = nx_;
+  const int height = ny_;
+
+  sf::Image image;
+  image.create(width, height);
+
+  double minVal = std::numeric_limits<double>::max();
+  double maxVal = std::numeric_limits<double>::min();
+
+  // Find min and max values in gScore for normalization
+  for (int i = 0; i < width; ++i) {
+    for (int j = 0; j < height; ++j) {
+      double val = gScore->get(i, j);
+      if (val == std::numeric_limits<double>::infinity())
+        continue;
+      if (val < minVal)
+        minVal = val;
+      if (val > maxVal)
+        maxVal = val;
+    }
+  }
+  // Define color scale mapping function
+  auto getColor = [&](double value) {
+    double normalizedValue = (value - minVal) / (maxVal - minVal);
+    // Map normalizedvalue to colors (dark blue to light blue to light red to
+    // dark red)
+    int blueComponent = static_cast<int>(255 * (1 - normalizedValue));
+    int redComponent = static_cast<int>(255 * normalizedValue);
+    int greenComponent = 0;
+
+    return sf::Color(redComponent, greenComponent, blueComponent);
+  };
+
+  // Generate the image
+  for (int i = 0; i < width; ++i) {
+    for (int j = 0; j < height; ++j) {
+      if (sharedVisibilityField_->get(i, j) < 1) {
+        image.setPixel(i, j, sf::Color::Black);
+      } else {
+        double value = gScore->get(i, j);
+        sf::Color color = getColor(value);
+        image.setPixel(i, j, color);
+      }
+    }
+  }
+
+  // compute the step size based on the max and min values
+  int number_of_contour_lines = sharedConfig_->number_of_contour_lines / 4;
+  double stepSize = (maxVal - minVal) / number_of_contour_lines;
+
+  std::vector<double> contourLevels;
+  for (double level = minVal; level <= maxVal; level += stepSize) {
+    contourLevels.push_back(level);
+  }
+  // Draw contour lines on the image
+  for (double level : contourLevels) {
+    for (int i = 0; i < width; ++i) {
+      for (int j = 0; j < height; ++j) {
+        double value = gScore->get(i, j);
+        if (std::abs(value - level) <= 1) {
+          image.setPixel(i, j, sf::Color::Black);
+        }
+      }
+    }
+  }
+
+  std::string outputPath = "./output/distanceFunction.png";
   image.saveToFile(outputPath);
 }
 

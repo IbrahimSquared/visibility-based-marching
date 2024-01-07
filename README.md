@@ -24,6 +24,9 @@ Sample marching starting from multiple sources: <br>
 Sample ESDF computation using VBM: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/ESDF.png) <br>
 
+Sample ESDF computation using VBM generated using SFML in C++: <br>
+![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/distanceFunction.png) <br>
+
 VBM relies on an underlying visibility algorithm that computes visibility as shown below (introduced in https://github.com/IbrahimSquared/visibility-heuristic-path-planner). <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/visibility_polygon.jpg) <br>
 
