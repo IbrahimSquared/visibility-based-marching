@@ -134,16 +134,6 @@ private:
   // [1 0; 0 1; -1 0; 0 -1; 1 1; -1 1; -1 -1; 1 -1] flattened out
   const int neighbours_[16] = {1, 0, 0,  1, -1, 0,  0, -1,
                                1, 1, -1, 1, -1, -1, 1, -1};
-  const double neighbour_distances_[16] = {
-      1,       1,       1,       1,       1,       1,       1,       1,
-      sqrt(2), sqrt(2), sqrt(2), sqrt(2), sqrt(2), sqrt(2), sqrt(2), sqrt(2)};
-  const int neighbours_4[8] = {1, 0, 0, 1, -1, 0, 0, -1};
-  const double neighbour_distances_4[8] = {1, 1, 1, 1, 1, 1, 1, 1};
-
-  const int neighbours_24[48] = {
-      1,  0, 0,  1, -1, 0,  0,  -1, 1,  1,  -1, 1,  -1, -1, 1,  -1,
-      2,  0, 0,  2, -2, 0,  0,  -2, 2,  1,  2,  2,  1,  2,  -1, 2,
-      -2, 2, -2, 1, -2, -1, -2, -2, -1, -2, 1,  -2, 2,  -2, 2,  -1};
   // Dimensions.
   size_t ny_;
   size_t nx_;

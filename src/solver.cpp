@@ -522,9 +522,7 @@ void Solver::aStarSearch() {
         continue;
       }
 
-      g = gScore_->get(x, y) +
-          evaluateDistance(x, y, neighbour_x,
-                           neighbour_y); // neighbour_distances_[j];
+      g = gScore_->get(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y);
       if (g >= gScore_->get(neighbour_x, neighbour_y)) {
         continue;
       };
