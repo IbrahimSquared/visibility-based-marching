@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "environment/field.hpp"
-#include "parser/ConfigParser.hpp"
+#include "parser/parser.hpp"
 
 namespace vbm {
 
