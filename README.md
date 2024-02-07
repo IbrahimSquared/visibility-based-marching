@@ -3,7 +3,7 @@ Visibility-based marching methods is an exact wave propagation technique that ha
 Paper to be attached soon. <br>
 Code developed for C++ 20. <br>
 
-Sample marching in a couple of environments: <br>
+## Sample marching in a couple of environments: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/euclidean.png) <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/AcrossTheCape.png) <br>
 Huge 3201x3201 maze VBM starting from initial wave source (1605, 1605): <br>
@@ -11,29 +11,27 @@ Huge 3201x3201 maze VBM starting from initial wave source (1605, 1605): <br>
 Sample marching image result generated using SFML in C++: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/visibilityBasedSolver.png) <br>
 
-
-Sample marching of different distance functions: <br>
+## Sample marching of different distance functions: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/chessboard.png) <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/cityblock.png) <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/cubic.png) <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/quasiEuclidean.png) <br>
 
-Sample marching starting from multiple sources: <br>
+## Sample marching starting from multiple sources: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/multiple_sources.png) <br>
 
-Sample ESDF computation using VBM: <br>
+## Sample ESDF computation using VBM: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/ESDF.png) <br>
 
-Sample ESDF computation using VBM generated using SFML in C++: <br>
+## Sample ESDF computation using VBM generated using SFML in C++: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/distanceFunction.png) <br>
 
 VBM relies on an underlying visibility algorithm that computes visibility as shown below (introduced in https://github.com/IbrahimSquared/visibility-heuristic-path-planner). <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/visibility_polygon.jpg) <br>
 
-Sample vStar and aStar image/path results generated using SFML in C++: <br>
+## Sample vStar and aStar image/path results generated using SFML in C++: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/vstar.png) <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/astar.png) <br>
-
 
 Please read how to compile/build the C++ files first below. <br>
 
@@ -57,6 +55,12 @@ The code then parses the settings and reads the results and plots them nicely.
 
 # Octave interface
 Similar to MATLAB interface, provided by [@peter-ap](https://github.com/peter-ap).
+
+# To build or compile using cmake in Linux
+Set compiler path if needed, make sure SFML libraries are installed, then: <br>
+``` mkdir build && cd build ``` <br>
+``` cmake .. ``` <br>
+``` make ```
 
 # Instructions to build the C++ code on Windows in Visual Studio Code
 We provide tasks.json, c_cpp_properties.json, and launch.json for building and launching the code in Visual Studio Code. <br>
@@ -82,8 +86,3 @@ Set the cmakePath accordingly in settings.json: <br>
 ``` "cmake.cmakePath": "C:\\Workdir\\Programs\\msys64\\mingw64\\bin\\cmake.exe", ``` <br>
 This has been tested with the CMake Kit ``` GCC 12.2.0 x86_64-w64-mingw32 ``` both in release and debug modes.
 
-# To build or compile using cmake in Linux
-Set compiler path if needed, make sure SFML libraries are installed, then: <br>
-``` mkdir build && cd build ``` <br>
-``` cmake .. ``` <br>
-``` make ```
