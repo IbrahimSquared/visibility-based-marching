@@ -57,6 +57,8 @@ The code then parses the settings and reads the results and plots them nicely.
 Similar to MATLAB interface, provided by [@peter-ap](https://github.com/peter-ap).
 
 # To build or compile using cmake in Linux
+Required: <br>
+``` sudo apt-get install libsfml-dev ``` <br>
 Set compiler path if needed, make sure SFML libraries are installed, then: <br>
 ``` mkdir build && cd build ``` <br>
 ``` cmake .. ``` <br>
