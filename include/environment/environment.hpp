@@ -31,9 +31,10 @@ public:
    * @param [in] max_height Max obstacle height.
    * @param [in] seedValue 0 by default.
    */
-  void generateNewEnvironment(size_t nrows, size_t ncols, int nb_of_obstacles,
-                              int min_width, int max_width, int min_height,
-                              int max_height, int seedValue = 0);
+  void generateNewEnvironment(const size_t nrows, const size_t ncols,
+                              const int nb_of_obstacles, const int min_width,
+                              const int max_width, const int min_height,
+                              const int max_height, const int seedValue = 0);
 
   /*!
    * @brief Generate a random new Environment from parsed config settings.
@@ -50,7 +51,7 @@ public:
 
   void loadMaps(const std::string &filename);
   std::vector<float> stringToFloatVector(const std::string &str,
-                                         char delimiter);
+                                         const char delimiter);
 
   // Get visibility field shared pointer.
   inline const auto &getVisibilityField() const {
