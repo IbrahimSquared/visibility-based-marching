@@ -45,13 +45,11 @@ Solver::Solver(Environment &env)
 /*****************************************************************************/
 /*****************************************************************************/
 void Solver::reset() {
-  gScore_ = std::make_unique<Field<double>>(
-      nx_, ny_, std::numeric_limits<double>::infinity());
-  fScore_ = std::make_unique<Field<double>>(
-      nx_, ny_, std::numeric_limits<double>::infinity());
-  cameFrom_ = std::make_unique<Field<size_t>>(nx_, ny_, 0);
-  inOpenSet_ = std::make_unique<Field<bool>>(nx_, ny_, false);
-  isUpdated_ = std::make_unique<Field<bool>>(nx_, ny_, false);
+  gScore_.reset(nx_, ny_, std::numeric_limits<double>::infinity());
+  fScore_.reset(nx_, ny_, std::numeric_limits<double>::infinity());
+  cameFrom_.reset(nx_, ny_, 0);
+  inOpenSet_.reset(nx_, ny_, false);
+  isUpdated_.reset(nx_, ny_, false);
 
   lightSources_.reset(new point[nx_ * ny_]);
 
@@ -117,9 +115,9 @@ void Solver::visibilityBasedSolver() {
     }
 
     d = 0;
-    gScore_->set(x, y, d);
-    isUpdated_->set(x, y, true);
-    cameFrom_->set(x, y, nb_of_sources_);
+    gScore_.set(x, y, d);
+    isUpdated_.set(x, y, true);
+    cameFrom_.set(x, y, nb_of_sources_);
     lightSources_[nb_of_sources_] = {x, y};
 
     openSet_->push(Node{x, y, d});
@@ -153,24 +151,23 @@ void Solver::visibilityBasedSolver() {
       if (neighbour_x >= nx_ || neighbour_y >= ny_) {
         continue;
       };
-      if (isUpdated_->get(neighbour_x, neighbour_y)) {
+      if (isUpdated_.get(neighbour_x, neighbour_y)) {
         continue;
       };
       if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) {
         if (sharedConfig_->expandInObstacles) {
-          gScore_->set(
-              neighbour_x, neighbour_y,
-              gScore_->get(x, y) +
-                  evaluateDistanceSpeedField(x, y, neighbour_x, neighbour_y));
+          gScore_.set(neighbour_x, neighbour_y,
+                      gScore_.get(x, y) + evaluateDistanceSpeedField(
+                                              x, y, neighbour_x, neighbour_y));
           openSet_->push(Node{neighbour_x, neighbour_y,
-                              gScore_->get(neighbour_x, neighbour_y)});
+                              gScore_.get(neighbour_x, neighbour_y)});
           const auto key = hashFunction(x, y, nb_of_sources_);
           visibilityHashMap_[key] =
               sharedVisibilityField_->get(neighbour_x, neighbour_y);
           ;
         }
-        cameFrom_->set(neighbour_x, neighbour_y, cameFrom_->get(x, y));
-        isUpdated_->set(neighbour_x, neighbour_y, true);
+        cameFrom_.set(neighbour_x, neighbour_y, cameFrom_.get(x, y));
+        isUpdated_.set(neighbour_x, neighbour_y, true);
         continue;
       }
 
@@ -189,12 +186,12 @@ void Solver::visibilityBasedSolver() {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
-        gScore_->set(neighbour_x, neighbour_y, minimum_element->first);
-        cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
+        gScore_.set(neighbour_x, neighbour_y, minimum_element->first);
+        cameFrom_.set(neighbour_x, neighbour_y, minimum_element->second);
       }
       openSet_->push(Node{neighbour_x, neighbour_y,
-                          gScore_->get(neighbour_x, neighbour_y)});
-      isUpdated_->set(neighbour_x, neighbour_y, true);
+                          gScore_.get(neighbour_x, neighbour_y)});
+      isUpdated_.set(neighbour_x, neighbour_y, true);
       ++nb_of_iterations_;
     }
   };
@@ -283,10 +280,10 @@ void Solver::vStarSearch() {
     f = g + h;
     openSet_->push(Node{x, y, f});
 
-    gScore_->set(x, y, g);
-    fScore_->set(x, y, f);
-    cameFrom_->set(x, y, nb_of_sources_);
-    isUpdated_->set(x, y, true);
+    gScore_.set(x, y, g);
+    fScore_.set(x, y, f);
+    cameFrom_.set(x, y, nb_of_sources_);
+    isUpdated_.set(x, y, true);
     lightSources_[nb_of_sources_] = {x, y};
     const auto key = hashFunction(x, y, nb_of_sources_);
     visibilityHashMap_[key] = lightStrength_;
@@ -341,12 +338,12 @@ void Solver::vStarSearch() {
       if (neighbour_x >= nx_ || neighbour_y >= ny_) {
         continue;
       };
-      if (isUpdated_->get(neighbour_x, neighbour_y)) {
+      if (isUpdated_.get(neighbour_x, neighbour_y)) {
         continue;
       };
       if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) {
-        cameFrom_->set(neighbour_x, neighbour_y, cameFrom_->get(x, y));
-        isUpdated_->set(neighbour_x, neighbour_y, true);
+        cameFrom_.set(neighbour_x, neighbour_y, cameFrom_.get(x, y));
+        isUpdated_.set(neighbour_x, neighbour_y, true);
         continue;
       }
 
@@ -365,19 +362,19 @@ void Solver::vStarSearch() {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
-        gScore_->set(neighbour_x, neighbour_y, minimum_element->first);
-        cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
+        gScore_.set(neighbour_x, neighbour_y, minimum_element->first);
+        cameFrom_.set(neighbour_x, neighbour_y, minimum_element->second);
       }
 
       h = 0;
       if (sharedConfig_->greedy) {
         h = evaluateDistance(neighbour_x, neighbour_y, endX, endY);
       }
-      f = gScore_->get(neighbour_x, neighbour_y) + h;
-      fScore_->set(neighbour_x, neighbour_y, f);
+      f = gScore_.get(neighbour_x, neighbour_y) + h;
+      fScore_.set(neighbour_x, neighbour_y, f);
 
       openSet_->push(Node{neighbour_x, neighbour_y, f});
-      isUpdated_->set(neighbour_x, neighbour_y, true);
+      isUpdated_.set(neighbour_x, neighbour_y, true);
       ++nb_of_iterations_;
     }
   }
@@ -469,11 +466,11 @@ void Solver::aStarSearch() {
     }
     f = g + h;
     openSet_->push(Node{x, y, f});
-    inOpenSet_->set(x, y, true);
+    inOpenSet_.set(x, y, true);
 
-    gScore_->set(x, y, g);
-    fScore_->set(x, y, f);
-    cameFrom_->set(x, y, indexAt(x, y));
+    gScore_.set(x, y, g);
+    fScore_.set(x, y, f);
+    cameFrom_.set(x, y, indexAt(x, y));
     ++nb_of_iterations_;
   }
 
@@ -505,7 +502,7 @@ void Solver::aStarSearch() {
     }
 
     openSet_->pop();
-    inOpenSet_->set(x, y, false);
+    inOpenSet_.set(x, y, false);
 
     // Expand frontline at current & update neighbours
     for (size_t j = 0; j < 16; j += 2) {
@@ -522,26 +519,26 @@ void Solver::aStarSearch() {
         continue;
       }
 
-      g = gScore_->get(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y);
-      if (g >= gScore_->get(neighbour_x, neighbour_y)) {
+      g = gScore_.get(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y);
+      if (g >= gScore_.get(neighbour_x, neighbour_y)) {
         continue;
       };
 
-      cameFrom_->set(neighbour_x, neighbour_y, indexAt(x, y));
-      gScore_->set(neighbour_x, neighbour_y, g);
+      cameFrom_.set(neighbour_x, neighbour_y, indexAt(x, y));
+      gScore_.set(neighbour_x, neighbour_y, g);
       ;
       if (sharedConfig_->greedy) {
         h = evaluateDistance(neighbour_x, neighbour_y, endX, endY);
       }
-      f = gScore_->get(neighbour_x, neighbour_y) + h;
-      fScore_->set(neighbour_x, neighbour_y, f);
+      f = gScore_.get(neighbour_x, neighbour_y) + h;
+      fScore_.set(neighbour_x, neighbour_y, f);
       ++nb_of_iterations_;
-      if (inOpenSet_->get(neighbour_x, neighbour_y)) {
+      if (inOpenSet_.get(neighbour_x, neighbour_y)) {
         continue;
       }
 
       openSet_->push(Node{neighbour_x, neighbour_y, f});
-      inOpenSet_->set(neighbour_x, neighbour_y, true);
+      inOpenSet_.set(neighbour_x, neighbour_y, true);
       ;
     }
   };
@@ -588,9 +585,9 @@ void Solver::computeDistanceFunction() {
     g = 0;
     openSet_->push(Node{x, y, g});
 
-    gScore_->set(x, y, g);
-    isUpdated_->set(x, y, true);
-    cameFrom_->set(x, y, nb_of_sources_);
+    gScore_.set(x, y, g);
+    isUpdated_.set(x, y, true);
+    cameFrom_.set(x, y, nb_of_sources_);
     lightSources_[nb_of_sources_] = {x, y};
     const auto key = hashFunction(x, y, nb_of_sources_);
     visibilityHashMap_[key] = lightStrength_;
@@ -622,7 +619,7 @@ void Solver::computeDistanceFunction() {
       if (neighbour_x >= nx_ || neighbour_y >= ny_) {
         continue;
       };
-      if (isUpdated_->get(neighbour_x, neighbour_y)) {
+      if (isUpdated_.get(neighbour_x, neighbour_y)) {
         continue;
       };
 
@@ -632,7 +629,7 @@ void Solver::computeDistanceFunction() {
         int potentialSource = potentialSources[k];
         int LS_x = lightSources_[potentialSource].first;
         int LS_y = lightSources_[potentialSource].second;
-        distance = gScore_->get(LS_x, LS_y) +
+        distance = gScore_.get(LS_x, LS_y) +
                    evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
         potentialDistances.push_back(
             std::pair<double, int>{distance, potentialSource});
@@ -645,10 +642,10 @@ void Solver::computeDistanceFunction() {
                            });
       distance = minimum_element->first;
       // use source giving least distance
-      gScore_->set(neighbour_x, neighbour_y, distance);
-      cameFrom_->set(neighbour_x, neighbour_y, minimum_element->second);
+      gScore_.set(neighbour_x, neighbour_y, distance);
+      cameFrom_.set(neighbour_x, neighbour_y, minimum_element->second);
       openSet_->push(Node{neighbour_x, neighbour_y, distance});
-      isUpdated_->set(neighbour_x, neighbour_y, true);
+      isUpdated_.set(neighbour_x, neighbour_y, true);
     }
   };
 
@@ -690,11 +687,11 @@ inline void Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
     if (potentialSource_x >= nx_ || potentialSource_y >= ny_) {
       continue;
     };
-    if (!isUpdated_->get(potentialSource_x, potentialSource_y)) {
+    if (!isUpdated_.get(potentialSource_x, potentialSource_y)) {
       continue;
     };
 
-    lightSource_num = cameFrom_->get(potentialSource_x, potentialSource_y);
+    lightSource_num = cameFrom_.get(potentialSource_x, potentialSource_y);
     // Pick only unique sources (no repitition in potentialSources)
     if (std::find(potentialSources.begin(), potentialSources.end(),
                   lightSource_num) == potentialSources.end()) {
@@ -723,7 +720,7 @@ void Solver::getPotentialDistances(
     distance = INFINITY;
     const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
     if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
-      distance = gScore_->get(LS_x, LS_y) +
+      distance = gScore_.get(LS_x, LS_y) +
                  evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
     }
     potentialDistances.push_back(
@@ -752,7 +749,7 @@ void Solver::getPotentialDistancesSpeedField(
     const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
     if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
       distance =
-          gScore_->get(LS_x, LS_y) +
+          gScore_.get(LS_x, LS_y) +
           evaluateDistanceSpeedField(LS_x, LS_y, neighbour_x, neighbour_y);
     }
     potentialDistances.push_back(
@@ -787,10 +784,10 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
     const auto key =
         hashFunction(pivot_neighbour_x, pivot_neighbour_y, nb_of_sources_);
   }
-  cameFrom_->set(neighbour_x, neighbour_y, nb_of_sources_);
-  gScore_->set(neighbour_x, neighbour_y,
-               gScore_->get(x, y) +
-                   evaluateDistance(x, y, neighbour_x, neighbour_y));
+  cameFrom_.set(neighbour_x, neighbour_y, nb_of_sources_);
+  gScore_.set(neighbour_x, neighbour_y,
+              gScore_.get(x, y) +
+                  evaluateDistance(x, y, neighbour_x, neighbour_y));
   ++nb_of_sources_;
 }
 
@@ -956,7 +953,7 @@ void Solver::reconstructPath(const Node &current,
                              const std::string &methodName) {
   std::vector<point> resultingPath;
   int x = current.x, y = current.y;
-  double t = cameFrom_->get(x, y);
+  double t = cameFrom_.get(x, y);
   double t_old = INFINITY;
   while (t != t_old) {
     resultingPath.push_back({x, y});
@@ -969,7 +966,7 @@ void Solver::reconstructPath(const Node &current,
       x = p.first;
       y = p.second;
     }
-    t = cameFrom_->get(x, y);
+    t = cameFrom_.get(x, y);
   }
   resultingPath.push_back({x, y});
   std::reverse(resultingPath.begin(), resultingPath.end());
@@ -1060,8 +1057,7 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::saveVisibilityBasedSolverImage(
-    const std::unique_ptr<Field<double>> &gScore) {
+void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) {
   const int width = nx_;
   const int height = ny_;
 
@@ -1074,7 +1070,7 @@ void Solver::saveVisibilityBasedSolverImage(
   // Find min and max values in gScore for normalization
   for (int i = 0; i < width; ++i) {
     for (int j = 0; j < height; ++j) {
-      double val = gScore->get(i, j);
+      double val = gScore.get(i, j);
       if (val == std::numeric_limits<double>::infinity())
         continue;
       if (val < minVal)
@@ -1101,7 +1097,7 @@ void Solver::saveVisibilityBasedSolverImage(
       if (sharedVisibilityField_->get(i, j) < 1) {
         image.setPixel(i, j, sf::Color::Black);
       } else {
-        double value = gScore->get(i, j);
+        double value = gScore.get(i, j);
         sf::Color color = getColor(value);
         image.setPixel(i, j, color);
       }
@@ -1139,7 +1135,7 @@ void Solver::saveVisibilityBasedSolverImage(
   for (double level : contourLevels) {
     for (int i = 0; i < width; ++i) {
       for (int j = 0; j < height; ++j) {
-        double value = gScore->get(i, j);
+        double value = gScore.get(i, j);
         if (std::abs(value - level) <= 1) {
           image.setPixel(i, j, sf::Color::Black);
         }
@@ -1154,8 +1150,7 @@ void Solver::saveVisibilityBasedSolverImage(
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::saveDistanceFunctionImage(
-    const std::unique_ptr<Field<double>> &gScore) {
+void Solver::saveDistanceFunctionImage(const Field<double> &gScore) {
   const int width = nx_;
   const int height = ny_;
 
@@ -1168,7 +1163,7 @@ void Solver::saveDistanceFunctionImage(
   // Find min and max values in gScore for normalization
   for (int i = 0; i < width; ++i) {
     for (int j = 0; j < height; ++j) {
-      double val = gScore->get(i, j);
+      double val = gScore.get(i, j);
       if (val == std::numeric_limits<double>::infinity())
         continue;
       if (val < minVal)
@@ -1195,7 +1190,7 @@ void Solver::saveDistanceFunctionImage(
       if (sharedVisibilityField_->get(i, j) < 1) {
         image.setPixel(i, j, sf::Color::Black);
       } else {
-        double value = gScore->get(i, j);
+        double value = gScore.get(i, j);
         sf::Color color = getColor(value);
         image.setPixel(i, j, color);
       }
@@ -1214,7 +1209,7 @@ void Solver::saveDistanceFunctionImage(
   for (double level : contourLevels) {
     for (int i = 0; i < width; ++i) {
       for (int j = 0; j < height; ++j) {
-        double value = gScore->get(i, j);
+        double value = gScore.get(i, j);
         if (std::abs(value - level) <= 1) {
           image.setPixel(i, j, sf::Color::Black);
         }
@@ -1258,7 +1253,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
       std::ostream &os = of;
       for (int j = ny_ - 1; j >= 0; --j) {
         for (size_t i = 0; i < nx_; ++i) {
-          os << gScore_->get(i, j) << " ";
+          os << gScore_.get(i, j) << " ";
         }
         os << "\n";
       }
@@ -1279,7 +1274,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
     std::ostream &os = of;
     for (int j = ny_ - 1; j >= 0; --j) {
       for (size_t i = 0; i < nx_; ++i) {
-        os << gScore_->get(i, j) << " ";
+        os << gScore_.get(i, j) << " ";
       }
       os << "\n";
     }
@@ -1299,7 +1294,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
       std::ostream &os1 = of1;
       for (int j = ny_ - 1; j >= 0; --j) {
         for (size_t i = 0; i < nx_; ++i) {
-          os1 << cameFrom_->get(i, j) << " ";
+          os1 << cameFrom_.get(i, j) << " ";
         }
         os1 << "\n";
       }
@@ -1361,7 +1356,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
     std::ostream &os = of1;
     for (int j = ny_ - 1; j >= 0; --j) {
       for (size_t i = 0; i < nx_; ++i) {
-        os << gScore_->get(i, j) << " ";
+        os << gScore_.get(i, j) << " ";
       }
       os << "\n";
     }
@@ -1382,7 +1377,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
     std::ostream &os = of2;
     for (int j = ny_ - 1; j >= 0; --j) {
       for (size_t i = 0; i < nx_; ++i) {
-        os << fScore_->get(i, j) << " ";
+        os << fScore_.get(i, j) << " ";
       }
       os << "\n";
     }

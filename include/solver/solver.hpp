@@ -40,7 +40,7 @@ private:
   inline int indexAt(const size_t x, const size_t y) const {
     return x + y * nx_;
   };
-  inline point coordinatesAt(size_t index) const {
+  inline point coordinatesAt(const size_t index) const {
     size_t x = index % nx_;
     size_t y = (index) / nx_;
     return {x, y};
@@ -88,9 +88,8 @@ private:
                    const std::string &methodName);
   void saveImageWithPath(const std::vector<point> &path,
                          const std::string &methodName);
-  void
-  saveVisibilityBasedSolverImage(const std::unique_ptr<Field<double>> &gScore);
-  void saveDistanceFunctionImage(const std::unique_ptr<Field<double>> &gScore);
+  void saveVisibilityBasedSolverImage(const Field<double> &gScore);
+  void saveDistanceFunctionImage(const Field<double> &gScore);
 
   /*!
    * @brief Updates accessibility/visibility to a point using PDE advection.
@@ -114,12 +113,19 @@ private:
   std::shared_ptr<Field<double>> sharedVisibilityField_;
   std::shared_ptr<Field<double>> sharedSpeedField_;
 
-  std::unique_ptr<Field<double>> gScore_;
-  std::unique_ptr<Field<double>> fScore_;
-  std::unique_ptr<Field<size_t>> cameFrom_;
-  std::unique_ptr<Field<bool>> inOpenSet_;
-  std::unique_ptr<Field<bool>> inClosedSet_;
-  std::unique_ptr<Field<bool>> isUpdated_;
+  Field<double> gScore_;
+  Field<double> fScore_;
+  Field<size_t> cameFrom_;
+  Field<bool> inOpenSet_;
+  Field<bool> inClosedSet_;
+  Field<bool> isUpdated_;
+
+  // std::unique_ptr<Field<double>> gScore_;
+  // std::unique_ptr<Field<double>> fScore_;
+  // std::unique_ptr<Field<size_t>> cameFrom_;
+  // std::unique_ptr<Field<bool>> inOpenSet_;
+  // std::unique_ptr<Field<bool>> inClosedSet_;
+  // std::unique_ptr<Field<bool>> isUpdated_;
 
   std::shared_ptr<Config> sharedConfig_;
   std::unique_ptr<point[]> lightSources_;
