@@ -67,6 +67,16 @@ public:
     return *this;
   }
 
+  void reset(const size_t nx, const size_t ny, const T default_value) {
+    nx_ = nx;
+    ny_ = ny;
+    size_ = nx * ny;
+    data_ = std::make_unique<T[]>(size_);
+    for (size_t i = 0; i < size_; ++i) {
+      data_[i] = default_value;
+    }
+  }
+
   ~Field() = default;
 
 private:
