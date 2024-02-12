@@ -41,8 +41,8 @@ private:
     return x + y * nx_;
   };
   inline point coordinatesAt(const size_t index) const {
-    size_t x = index % nx_;
-    size_t y = (index) / nx_;
+    const size_t x = index % nx_;
+    const size_t y = (index) / nx_;
     return {x, y};
   }
 
