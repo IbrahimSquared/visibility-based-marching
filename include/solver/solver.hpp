@@ -117,15 +117,7 @@ private:
   Field<double> fScore_;
   Field<size_t> cameFrom_;
   Field<bool> inOpenSet_;
-  Field<bool> inClosedSet_;
   Field<bool> isUpdated_;
-
-  // std::unique_ptr<Field<double>> gScore_;
-  // std::unique_ptr<Field<double>> fScore_;
-  // std::unique_ptr<Field<size_t>> cameFrom_;
-  // std::unique_ptr<Field<bool>> inOpenSet_;
-  // std::unique_ptr<Field<bool>> inClosedSet_;
-  // std::unique_ptr<Field<bool>> isUpdated_;
 
   std::shared_ptr<Config> sharedConfig_;
   std::unique_ptr<point[]> lightSources_;
