@@ -58,6 +58,10 @@ Similar to MATLAB interface, provided by [@peter-ap](https://github.com/peter-ap
 
 # To build or compile using cmake in Linux
 Required: <br>
+cmake and g++: <br>
+``` sudo apt install cmake ``` <br>
+``` sudo apt install g++ ``` <br>
+libsfml-dev: <br>
 ``` sudo apt-get install libsfml-dev ``` <br>
 Set compiler path if needed, make sure SFML libraries are installed, then: <br>
 ``` mkdir build && cd build ``` <br>
