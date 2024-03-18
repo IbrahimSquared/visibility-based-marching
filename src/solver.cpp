@@ -861,7 +861,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
-    // Q2
+    // Q4
     else if ((x - LS_x > 0) && (y - LS_y < 0)) {
       key = hashFunction(x - 1, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
@@ -913,7 +913,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
-    // Q4
+    // Q2
     else if ((x - LS_x < 0) && (y - LS_y > 0)) {
       key = hashFunction(x + 1, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
