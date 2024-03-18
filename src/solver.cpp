@@ -861,28 +861,28 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
-    // Q4
-    else if ((x - LS_x > 0) && (y - LS_y < 0)) {
-      key = hashFunction(x - 1, y + 1, lightSourceNumber);
+    // Q2
+    else if ((x - LS_x < 0) && (y - LS_y > 0)) {
+      key = hashFunction(x + 1, y - 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y + 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y - 1);
       }
-      if (x - LS_x == LS_y - y) {
+      if (LS_x - x == y - LS_y) {
         v = visibilityHashMap_.at(key);
-      } else if (x - LS_x < LS_y - y) {
-        const auto key_1 = hashFunction(x, y + 1, lightSourceNumber);
+      } else if (LS_x - x < y - LS_y) {
+        const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
         }
-        c = static_cast<double>(x - LS_x) / (LS_y - y);
+        c = static_cast<double>(LS_x - x) / (y - LS_y);
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
-      } else if (x - LS_x > LS_y - y) {
-        const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
+      } else if (LS_x - x > y - LS_y) {
+        const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
         }
-        c = static_cast<double>(LS_y - y) / (x - LS_x);
+        c = static_cast<double>(y - LS_y) / (LS_x - x);
         double v2 = visibilityHashMap_.at(key_2);
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
@@ -913,28 +913,28 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
     }
-    // Q2
-    else if ((x - LS_x < 0) && (y - LS_y > 0)) {
-      key = hashFunction(x + 1, y - 1, lightSourceNumber);
+    // Q4
+    else if ((x - LS_x > 0) && (y - LS_y < 0)) {
+      key = hashFunction(x - 1, y + 1, lightSourceNumber);
       if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y - 1);
+        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y + 1);
       }
-      if (LS_x - x == y - LS_y) {
+      if (x - LS_x == LS_y - y) {
         v = visibilityHashMap_.at(key);
-      } else if (LS_x - x < y - LS_y) {
-        const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
+      } else if (x - LS_x < LS_y - y) {
+        const auto key_1 = hashFunction(x, y + 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
         }
-        c = static_cast<double>(LS_x - x) / (y - LS_y);
+        c = static_cast<double>(x - LS_x) / (LS_y - y);
         double v1 = visibilityHashMap_.at(key_1);
         v = v1 - c * (v1 - visibilityHashMap_.at(key));
-      } else if (LS_x - x > y - LS_y) {
-        const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
+      } else if (x - LS_x > LS_y - y) {
+        const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
         if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
         }
-        c = static_cast<double>(y - LS_y) / (LS_x - x);
+        c = static_cast<double>(LS_y - y) / (x - LS_x);
         double v2 = visibilityHashMap_.at(key_2);
         v = v2 - c * (v2 - visibilityHashMap_.at(key));
       }
