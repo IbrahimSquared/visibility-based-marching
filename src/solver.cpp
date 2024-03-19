@@ -1026,7 +1026,7 @@ void Solver::reconstructPath(const Node &current,
 /*****************************************************************************/
 /*****************************************************************************/
 void Solver::saveImageWithPath(const std::vector<point> &path,
-                               const std::string &methodName) {
+                               const std::string &methodName) const {
   sf::Image image;
   image = *uniqueLoadedImage_;
   sf::Color color;
@@ -1089,7 +1089,7 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) {
+void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) const {
   const int width = nx_;
   const int height = ny_;
 
@@ -1171,7 +1171,7 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) {
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::saveDistanceFunctionImage(const Field<double> &gScore) {
+void Solver::saveDistanceFunctionImage(const Field<double> &gScore) const {
   const int width = nx_;
   const int height = ny_;
 
@@ -1235,7 +1235,7 @@ void Solver::saveDistanceFunctionImage(const Field<double> &gScore) {
 /*****************************************************************************/
 /*****************************************************************************/
 void Solver::saveResults(const std::vector<point> &resultingPath,
-                         const std::string &methodName) {
+                         const std::string &methodName) const {
   namespace fs = std::filesystem;
 
   // Define the path to the output file

@@ -85,11 +85,11 @@ private:
                              const int neighbour_y);
 
   void saveResults(const std::vector<point> &path,
-                   const std::string &methodName);
+                   const std::string &methodName) const;
   void saveImageWithPath(const std::vector<point> &path,
-                         const std::string &methodName);
-  void saveVisibilityBasedSolverImage(const Field<double> &gScore);
-  void saveDistanceFunctionImage(const Field<double> &gScore);
+                         const std::string &methodName) const;
+  void saveVisibilityBasedSolverImage(const Field<double> &gScore) const;
+  void saveDistanceFunctionImage(const Field<double> &gScore) const;
 
   /*!
    * @brief Updates accessibility/visibility to a point using PDE advection.
