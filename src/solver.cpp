@@ -1157,7 +1157,7 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) const {
     for (int i = 0; i < width; ++i) {
       for (int j = 0; j < height; ++j) {
         double value = gScore(i, j);
-        if (std::abs(value - level) <= 1) {
+        if (std::abs(value - level) <= stepSize / 15) {
           image.setPixel(i, j, sf::Color::Black);
         }
       }
@@ -1208,19 +1208,20 @@ void Solver::saveDistanceFunctionImage(const Field<double> &gScore) const {
   }
 
   // compute the step size based on the max and min values
-  int number_of_contour_lines = sharedConfig_->number_of_contour_lines / 4;
+  int number_of_contour_lines = sharedConfig_->number_of_contour_lines / 3;
   double stepSize = (maxVal - minVal) / number_of_contour_lines;
 
   std::vector<double> contourLevels;
   for (double level = minVal; level <= maxVal; level += stepSize) {
     contourLevels.push_back(level);
   }
+
   // Draw contour lines on the image
   for (double level : contourLevels) {
     for (int i = 0; i < width; ++i) {
       for (int j = 0; j < height; ++j) {
         double value = gScore(i, j);
-        if (std::abs(value - level) <= 1) {
+        if (std::abs(value - level) <= stepSize / 15) {
           image.setPixel(i, j, sf::Color::Black);
         }
       }
