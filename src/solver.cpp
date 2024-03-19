@@ -15,6 +15,39 @@ template <typename T> auto durationInMicroseconds(T start, T end) {
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
+sf::Color getColor(double value) {
+  // jet colormap for SFML visualization/plot
+  const int color_index = 255 * value;
+  double r, g, b;
+  if (color_index < 32) {
+    r = 0;
+    g = 0;
+    b = 0.5156 + 0.0156 * color_index;
+  } else if (color_index < 96) {
+    r = 0;
+    g = 0.0156 + 0.9844 * (color_index - 32.0) / 64;
+    b = 1;
+  } else if (color_index < 158) {
+    r = 0.0156 + (color_index - 96.0) / 64;
+    g = 1;
+    b = 0.9844 - (color_index - 96.0) / 64;
+  } else if (color_index < 223) {
+    r = 1;
+    g = 1 - (color_index - 158.0) / 65;
+    b = 0;
+  } else {
+    r = (2 - (color_index - 223.0) / 32) / 2.0;
+    g = 0;
+    b = 0;
+  }
+  return sf::Color(static_cast<sf::Uint8>(r * 255),
+                   static_cast<sf::Uint8>(g * 255),
+                   static_cast<sf::Uint8>(b * 255));
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
 Solver::Solver(Environment &env)
     : sharedConfig_(env.getConfig()),
       sharedVisibilityField_(env.getVisibilityField()),
@@ -1078,17 +1111,6 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) {
         maxVal = val;
     }
   }
-  // Define color scale mapping function
-  auto getColor = [&](double value) {
-    double normalizedValue = (value - minVal) / (maxVal - minVal);
-    // Map normalizedvalue to colors (dark blue to light blue to light red to
-    // dark red)
-    int blueComponent = static_cast<int>(255 * (1 - normalizedValue));
-    int redComponent = static_cast<int>(255 * normalizedValue);
-    int greenComponent = 0;
-
-    return sf::Color(redComponent, greenComponent, blueComponent);
-  };
 
   // Generate the image
   for (int i = 0; i < width; ++i) {
@@ -1096,8 +1118,8 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) {
       if (sharedVisibilityField_->get(i, j) < 1) {
         image.setPixel(i, j, sf::Color::Black);
       } else {
-        double value = gScore(i, j);
-        sf::Color color = getColor(value);
+        const double normalized_value = gScore(i, j) / (maxVal - minVal);
+        sf::Color color = getColor(normalized_value);
         image.setPixel(i, j, color);
       }
     }
@@ -1171,17 +1193,6 @@ void Solver::saveDistanceFunctionImage(const Field<double> &gScore) {
         maxVal = val;
     }
   }
-  // Define color scale mapping function
-  auto getColor = [&](double value) {
-    double normalizedValue = (value - minVal) / (maxVal - minVal);
-    // Map normalizedvalue to colors (dark blue to light blue to light red to
-    // dark red)
-    int blueComponent = static_cast<int>(255 * (1 - normalizedValue));
-    int redComponent = static_cast<int>(255 * normalizedValue);
-    int greenComponent = 0;
-
-    return sf::Color(redComponent, greenComponent, blueComponent);
-  };
 
   // Generate the image
   for (int i = 0; i < width; ++i) {
@@ -1189,8 +1200,8 @@ void Solver::saveDistanceFunctionImage(const Field<double> &gScore) {
       if (sharedVisibilityField_->get(i, j) < 1) {
         image.setPixel(i, j, sf::Color::Black);
       } else {
-        double value = gScore(i, j);
-        sf::Color color = getColor(value);
+        const double normalized_value = gScore(i, j) / (maxVal - minVal);
+        sf::Color color = getColor(normalized_value);
         image.setPixel(i, j, color);
       }
     }
