@@ -42,3 +42,6 @@ output/
 
 # ignore cache folder
 .cache/
+
+# ignore executable
+vbm
