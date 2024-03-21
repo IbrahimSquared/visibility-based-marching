@@ -1,7 +1,21 @@
 # Visibility-based Marching (VBM)
-Visibility-based marching methods is an exact wave propagation technique that has an O(n) compute and space complexity. Solves several shortcomings of SOTA marching methods and inherently produces globally optimal paths. <br>
+Visibility-based marching method is an exact wave propagation technique that has an O(n) compute and space complexity. Solves several shortcomings of SOTA marching methods and inherently produces globally optimal paths. <br>
+Compared to SOTA marching methods:
+-Uses exact distance function (Minkowski or any other) instead of approximations obtained with discritized Eikonal equation
+- Inherently produces globally optimal paths instead of requiring gradient descent per path query
+- Faster and more efficient
+- More accurate
+- Verified with Anya in obstacle-rich environments
+
 Paper to be attached soon. <br>
 Code developed for C++ 20. <br>
+The code has four main methods: <br>
+- visibilityBasedSolver: performs VBM <br>
+- vStarSearch: $V^*$ greedy version of VBM <br>
+- aStarSearch: for comparison purposes with vStarSearch $V^*$ <br>
+- computeDistanceFunction: computes Euclidean Distance Function for the map <br>
+
+Set which methods to use in config/settings.config and what results to save. Uses SFML to make plots that are saved in output/ directory. You can either load a map or generate one randomly (can also fix the randomness seed number for repeatability). 
 
 ## Sample marching in a couple of environments: <br>
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/euclidean.png) <br>
@@ -40,6 +54,18 @@ Inside config folder there is a settings.config file which the code parses. The 
 It additionally implements an AStar and a VStar (greedy VBM) solver for comparison/completion purposes.
 The repo includes expfig and MSFM with their licenses inside for usage/comparison. <br>
 
+# To build or compile using cmake in Linux
+Required: <br>
+cmake and g++: <br>
+``` sudo apt install cmake ``` <br>
+``` sudo apt install g++ ``` <br>
+libsfml-dev: <br>
+``` sudo apt-get install libsfml-dev ``` <br>
+Set compiler path if needed, make sure SFML libraries are installed, then: <br>
+``` mkdir build && cd build ``` <br>
+``` cmake .. ``` <br>
+``` make ```
+
 # Important: Standard for inputting/reading images 
 Mode=2 reads an image map, the path of which is specified in imagePath in settings.config, for example lab_image_edited.png (893x646) in the folder images. <br>
 Bottom left corner is the origin. <br>
@@ -56,17 +82,6 @@ The code then parses the settings and reads the results and plots them nicely.
 # Octave interface
 Similar to MATLAB interface, provided by [@peter-ap](https://github.com/peter-ap).
 
-# To build or compile using cmake in Linux
-Required: <br>
-cmake and g++: <br>
-``` sudo apt install cmake ``` <br>
-``` sudo apt install g++ ``` <br>
-libsfml-dev: <br>
-``` sudo apt-get install libsfml-dev ``` <br>
-Set compiler path if needed, make sure SFML libraries are installed, then: <br>
-``` mkdir build && cd build ``` <br>
-``` cmake .. ``` <br>
-``` make ```
 
 # Instructions to build the C++ code on Windows in Visual Studio Code
 We provide tasks.json, c_cpp_properties.json, and launch.json for building and launching the code in Visual Studio Code. <br>
