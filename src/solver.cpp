@@ -100,7 +100,7 @@ void Solver::reset() {
   nb_of_iterations_ = 0;
 
   // Reserve hash map
-  visibilityHashMap_.reserve(nx_ * ny_ * 2);
+  visibilityHashMap_.reserve(nx_ * ny_);
 }
 
 /*****************************************************************************/
