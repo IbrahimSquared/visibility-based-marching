@@ -838,6 +838,10 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
   if (visibilityHashMap_.count(key)) {
     return;
   }
+  if (sharedVisibilityField_->get(x, y) < visibilityThreshold_) {
+    visibilityHashMap_[key] = 0;
+    return;
+  }
 
   if (x == LS_x) {
     if (y - LS_y > 0) {
