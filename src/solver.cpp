@@ -814,8 +814,6 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
     // Update neighbour visibility
     updatePointVisibility(nb_of_sources_, x, y, pivot_neighbour_x,
                           pivot_neighbour_y);
-    const auto key =
-        hashFunction(pivot_neighbour_x, pivot_neighbour_y, nb_of_sources_);
   }
   cameFrom_(neighbour_x, neighbour_y) = nb_of_sources_;
   gScore_(neighbour_x, neighbour_y) =
