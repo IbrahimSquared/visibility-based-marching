@@ -1132,9 +1132,9 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) const {
   color.a = 1;
   int x0, y0;
   int radius = 10;
-  for (size_t i = 0; i < sharedConfig_->initialFrontline.size(); i += 2) {
-    x0 = sharedConfig_->initialFrontline[i];
-    y0 = ny_ - 1 - sharedConfig_->initialFrontline[i + 1];
+  for (size_t k = 0; k < sharedConfig_->initialFrontline.size(); k += 2) {
+    x0 = sharedConfig_->initialFrontline[k];
+    y0 = ny_ - 1 - sharedConfig_->initialFrontline[k + 1];
     for (int i = -radius; i <= radius; ++i) {
       for (int j = -radius; j <= radius; ++j) {
         if (i * i + j * j <= radius * radius) {
