@@ -195,14 +195,13 @@ bool Environment::loadImage(const std::string &filename) {
 
     resetEnvironment();
 
-    sf::Color color;
-    int gray;
+    sf::Color pixel;
     // Access the pixel data of the image
     for (size_t x = 0; x < nx_; ++x) {
       for (size_t y = 0; y < ny_; ++y) {
-        color = uniqueLoadedImage_->getPixel(x, y);
-        gray = color.r;
-        if (gray == 255) {
+        pixel = uniqueLoadedImage_->getPixel(x, y);
+        const int gray = 0.3 * pixel.r + 0.59 * pixel.g + 0.11 * pixel.b;
+        if (gray > 128) {
           sharedVisibilityField_->set(x, y, 1.0);
           sharedSpeedField_->set(x, y, 1.0);
         } else {
