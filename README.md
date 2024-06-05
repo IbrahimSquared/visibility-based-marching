@@ -61,9 +61,9 @@ cmake and g++: <br>
 ``` sudo apt install cmake ``` <br>
 ``` sudo apt install g++ ``` <br>
 libsfml-dev: <br>
-``` sudo apt-get install libsfml-dev ``` <br>
+``` sudo apt install libsfml-dev ``` <br>
 Set compiler path if needed, make sure SFML libraries are installed, then: <br>
-``` mkdir build && cd build ``` <br>
+``` mkdir -p build && cd build ``` <br>
 ``` cmake .. ``` <br>
 ``` make ```
 
