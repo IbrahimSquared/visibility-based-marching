@@ -16,10 +16,13 @@ struct Node {
   bool operator<(const Node &other) const { return f > other.f; }
 };
 
+struct point {
+  int x, y;
+};
+
 class Solver {
 public:
   using Map = ska::flat_hash_map<size_t, double>;
-  using point = std::pair<size_t, size_t>;
 
   explicit Solver(Environment &env);
 
@@ -41,8 +44,8 @@ private:
     return x + y * nx_;
   };
   inline point coordinatesAt(const size_t index) const {
-    const size_t x = index % nx_;
-    const size_t y = (index) / nx_;
+    const int x = index % nx_;
+    const int y = (index) / nx_;
     return {x, y};
   }
 

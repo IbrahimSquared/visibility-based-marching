@@ -663,8 +663,8 @@ void Solver::computeDistanceFunction() {
       potentialDistances.clear();
       for (int k = 0; k < potentialSources.size(); ++k) {
         int potentialSource = potentialSources[k];
-        int LS_x = lightSources_[potentialSource].first;
-        int LS_y = lightSources_[potentialSource].second;
+        int LS_x = lightSources_[potentialSource].x;
+        int LS_y = lightSources_[potentialSource].y;
         distance = gScore_(LS_x, LS_y) +
                    evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
         potentialDistances.push_back(
@@ -748,8 +748,8 @@ void Solver::getPotentialDistances(
   potentialDistances.clear();
   for (size_t k = 0; k < potentialSources.size(); ++k) {
     potentialSource = potentialSources[k];
-    LS_x = lightSources_[potentialSource].first;
-    LS_y = lightSources_[potentialSource].second;
+    LS_x = lightSources_[potentialSource].x;
+    LS_y = lightSources_[potentialSource].y;
     // update visibility from source
     updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
                           neighbour_y);
@@ -776,8 +776,8 @@ void Solver::getPotentialDistancesSpeedField(
   potentialDistances.clear();
   for (size_t k = 0; k < potentialSources.size(); ++k) {
     potentialSource = potentialSources[k];
-    LS_x = lightSources_[potentialSource].first;
-    LS_y = lightSources_[potentialSource].second;
+    LS_x = lightSources_[potentialSource].x;
+    LS_y = lightSources_[potentialSource].y;
     // update visibility from source
     updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
                           neighbour_y);
@@ -800,7 +800,7 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
                             const int neighbour_y) {
   int pivot_neighbour_x, pivot_neighbour_y;
   // Pushback parent as a new lightSource
-  lightSources_[nb_of_sources_] = std::make_pair(x, y); // {x, y};
+  lightSources_[nb_of_sources_] = {x, y}; // {x, y};
   // Pusback pivot & update light source visibility
   const auto key = hashFunction(x, y, nb_of_sources_);
   visibilityHashMap_[key] = lightStrength_;
@@ -997,12 +997,12 @@ void Solver::reconstructPath(const Node &current,
     resultingPath.push_back({x, y});
     t_old = t;
     if (methodName == "vstar") {
-      x = lightSources_[t].first;
-      y = lightSources_[t].second;
+      x = lightSources_[t].x;
+      y = lightSources_[t].y;
     } else if (methodName == "astar") {
       auto p = coordinatesAt(t);
-      x = p.first;
-      y = p.second;
+      x = p.x;
+      y = p.y;
     }
     t = cameFrom_(x, y);
   }
@@ -1017,9 +1017,9 @@ void Solver::reconstructPath(const Node &current,
   // compute total distance
   double totalDistance = 0;
   for (size_t i = 0; i < resultingPath.size() - 1; ++i) {
-    totalDistance += evaluateDistance(
-        resultingPath[i].first, resultingPath[i].second,
-        resultingPath[i + 1].first, resultingPath[i + 1].second);
+    totalDistance +=
+        evaluateDistance(resultingPath[i].x, resultingPath[i].y,
+                         resultingPath[i + 1].x, resultingPath[i + 1].y);
   }
   if (!sharedConfig_->silent) {
     std::cout << methodName << " path length: " << totalDistance << std::endl;
@@ -1041,10 +1041,10 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
   int dx, dy, sx, sy, err;
 
   for (size_t i = 0; i < path.size() - 1; ++i) {
-    x0 = path[i].first;
-    y0 = path[i].second;
-    x1 = path[i + 1].first;
-    y1 = path[i + 1].second;
+    x0 = path[i].x;
+    y0 = path[i].y;
+    x1 = path[i + 1].x;
+    y1 = path[i + 1].y;
 
     dx = std::abs(x1 - x0);
     dy = std::abs(y1 - y0);
@@ -1331,8 +1331,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
       }
       std::ostream &os = of3;
       for (size_t i = 0; i < nb_of_sources_; ++i) {
-        os << lightSources_[i].first << " "
-           << ny_ - 1 - lightSources_[i].second;
+        os << lightSources_[i].x << " " << ny_ - 1 - lightSources_[i].y;
         os << "\n";
       }
       of3.close();
@@ -1353,7 +1352,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
     }
     std::ostream &os = of;
     for (size_t i = 0; i < resultingPath.size(); ++i) {
-      os << resultingPath[i].first << " " << ny_ - 1 - resultingPath[i].second;
+      os << resultingPath[i].x << " " << ny_ - 1 - resultingPath[i].y;
       os << "\n";
     }
     of.close();
@@ -1414,7 +1413,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
     }
     std::ostream &os = of3;
     for (size_t i = 0; i < nb_of_sources_; ++i) {
-      os << lightSources_[i].first << " " << ny_ - 1 - lightSources_[i].second;
+      os << lightSources_[i].x << " " << ny_ - 1 - lightSources_[i].y;
       os << "\n";
     }
     of3.close();
