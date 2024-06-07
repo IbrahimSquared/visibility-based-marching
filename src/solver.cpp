@@ -181,7 +181,8 @@ void Solver::visibilityBasedSolver() {
       neighbour_y = y + neighbours_[j + 1];
 
       // Box check
-      if (neighbour_x >= nx_ || neighbour_y >= ny_) {
+      if (neighbour_x >= nx_ || neighbour_x < 0 || neighbour_y >= ny_ ||
+          neighbour_y < 0) {
         continue;
       };
       if (isUpdated_(neighbour_x, neighbour_y)) {
@@ -368,7 +369,8 @@ void Solver::vStarSearch() {
       neighbour_y = y + neighbours_[j + 1];
 
       // Box check
-      if (neighbour_x >= nx_ || neighbour_y >= ny_) {
+      if (neighbour_x >= nx_ || neighbour_x < 0 || neighbour_y >= ny_ ||
+          neighbour_y < 0) {
         continue;
       };
       if (isUpdated_(neighbour_x, neighbour_y)) {
@@ -649,7 +651,8 @@ void Solver::computeDistanceFunction() {
       neighbour_y = y + neighbours_[j + 1];
 
       // Box check
-      if (neighbour_x >= nx_ || neighbour_y >= ny_) {
+      if (neighbour_x >= nx_ || neighbour_x < 0 || neighbour_y >= ny_ ||
+          neighbour_y < 0) {
         continue;
       };
       if (isUpdated_(neighbour_x, neighbour_y)) {
@@ -808,7 +811,8 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
     pivot_neighbour_x = x + neighbours_[p];
     pivot_neighbour_y = y + neighbours_[p + 1];
     // Box check
-    if (pivot_neighbour_x >= nx_ || pivot_neighbour_y >= ny_) {
+    if (pivot_neighbour_x >= nx_ || pivot_neighbour_x < 0 ||
+        pivot_neighbour_y >= ny_ || pivot_neighbour_y < 0) {
       continue;
     }
     // Update neighbour visibility
