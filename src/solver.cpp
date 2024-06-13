@@ -181,10 +181,9 @@ void Solver::visibilityBasedSolver() {
       neighbour_y = y + neighbours_[j + 1];
 
       // Box check
-      if (neighbour_x >= nx_ || neighbour_x < 0 || neighbour_y >= ny_ ||
-          neighbour_y < 0) {
+      if (!isValid(neighbour_x, neighbour_y)) {
         continue;
-      };
+      }
       if (updated_(neighbour_x, neighbour_y)) {
         continue;
       };
@@ -369,10 +368,9 @@ void Solver::vStarSearch() {
       neighbour_y = y + neighbours_[j + 1];
 
       // Box check
-      if (neighbour_x >= nx_ || neighbour_x < 0 || neighbour_y >= ny_ ||
-          neighbour_y < 0) {
+      if (!isValid(neighbour_x, neighbour_y)) {
         continue;
-      };
+      }
       if (updated_(neighbour_x, neighbour_y)) {
         continue;
       };
@@ -546,10 +544,9 @@ void Solver::aStarSearch() {
       neighbour_y = y + neighbours_[j + 1];
 
       // Box check
-      if (neighbour_x >= nx_ || neighbour_y >= ny_ || neighbour_x < 0 ||
-          neighbour_y < 0) {
+      if (!isValid(neighbour_x, neighbour_y)) {
         continue;
-      };
+      }
       if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) {
         continue;
       }
@@ -651,10 +648,9 @@ void Solver::computeDistanceFunction() {
       neighbour_y = y + neighbours_[j + 1];
 
       // Box check
-      if (neighbour_x >= nx_ || neighbour_x < 0 || neighbour_y >= ny_ ||
-          neighbour_y < 0) {
+      if (!isValid(neighbour_x, neighbour_y)) {
         continue;
-      };
+      }
       if (updated_(neighbour_x, neighbour_y)) {
         continue;
       };
@@ -720,7 +716,7 @@ inline void Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
     potentialSource_x = neighbour_x + neighbours_[k];
     potentialSource_y = neighbour_y + neighbours_[k + 1];
     // Box check
-    if (potentialSource_x >= nx_ || potentialSource_y >= ny_) {
+    if (!isValid(potentialSource_x, potentialSource_y)) {
       continue;
     };
     if (!updated_(potentialSource_x, potentialSource_y)) {
@@ -811,8 +807,7 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
     pivot_neighbour_x = x + neighbours_[p];
     pivot_neighbour_y = y + neighbours_[p + 1];
     // Box check
-    if (pivot_neighbour_x >= nx_ || pivot_neighbour_x < 0 ||
-        pivot_neighbour_y >= ny_ || pivot_neighbour_y < 0) {
+    if (!isValid(pivot_neighbour_x, pivot_neighbour_y)) {
       continue;
     }
     // Update neighbour visibility

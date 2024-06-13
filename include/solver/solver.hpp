@@ -113,6 +113,16 @@ private:
     return key;
   }
 
+  /*!
+   * @brief Checks if requested cell is in grid
+   * @param [in] x x position of the cell
+   * @param [in] y y position of the cell
+   * @return true if cell is in grid, false otherwise
+   */
+  inline const bool isValid(const int x, const int y) const {
+    return x >= 0 && x < nx_ && y >= 0 && y < ny_;
+  }
+
   std::shared_ptr<Field<double>> sharedVisibilityField_;
   std::shared_ptr<Field<double>> sharedSpeedField_;
 
