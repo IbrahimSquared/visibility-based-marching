@@ -120,7 +120,7 @@ private:
   Field<double> fScore_;
   Field<size_t> cameFrom_;
   Field<bool> inOpenSet_;
-  Field<bool> isUpdated_;
+  Field<bool> updated_;
 
   std::shared_ptr<Config> sharedConfig_;
   std::unique_ptr<point[]> lightSources_;

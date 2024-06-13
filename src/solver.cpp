@@ -82,7 +82,7 @@ void Solver::reset() {
   fScore_.reset(nx_, ny_, std::numeric_limits<double>::infinity());
   cameFrom_.reset(nx_, ny_, 0);
   inOpenSet_.reset(nx_, ny_, false);
-  isUpdated_.reset(nx_, ny_, false);
+  updated_.reset(nx_, ny_, false);
 
   lightSources_.reset(new point[nx_ * ny_]);
 
@@ -149,7 +149,7 @@ void Solver::visibilityBasedSolver() {
 
     d = 0;
     gScore_(x, y) = d;
-    isUpdated_(x, y) = true;
+    updated_(x, y) = true;
     cameFrom_(x, y) = nb_of_sources_;
     lightSources_[nb_of_sources_] = {x, y};
 
@@ -185,7 +185,7 @@ void Solver::visibilityBasedSolver() {
           neighbour_y < 0) {
         continue;
       };
-      if (isUpdated_(neighbour_x, neighbour_y)) {
+      if (updated_(neighbour_x, neighbour_y)) {
         continue;
       };
       if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) {
@@ -201,7 +201,7 @@ void Solver::visibilityBasedSolver() {
           ;
         }
         cameFrom_(neighbour_x, neighbour_y) = cameFrom_(x, y);
-        isUpdated_(neighbour_x, neighbour_y) = true;
+        updated_(neighbour_x, neighbour_y) = true;
         continue;
       }
 
@@ -225,7 +225,7 @@ void Solver::visibilityBasedSolver() {
       }
       openSet_->push(
           Node{neighbour_x, neighbour_y, gScore_(neighbour_x, neighbour_y)});
-      isUpdated_(neighbour_x, neighbour_y) = true;
+      updated_(neighbour_x, neighbour_y) = true;
       ++nb_of_iterations_;
     }
   };
@@ -317,7 +317,7 @@ void Solver::vStarSearch() {
     gScore_(x, y) = g;
     fScore_(x, y) = f;
     cameFrom_(x, y) = nb_of_sources_;
-    isUpdated_(x, y) = true;
+    updated_(x, y) = true;
     lightSources_[nb_of_sources_] = {x, y};
     const auto key = hashFunction(x, y, nb_of_sources_);
     visibilityHashMap_[key] = lightStrength_;
@@ -373,12 +373,12 @@ void Solver::vStarSearch() {
           neighbour_y < 0) {
         continue;
       };
-      if (isUpdated_(neighbour_x, neighbour_y)) {
+      if (updated_(neighbour_x, neighbour_y)) {
         continue;
       };
       if (sharedVisibilityField_->get(neighbour_x, neighbour_y) < 1) {
         cameFrom_(neighbour_x, neighbour_y) = cameFrom_(x, y);
-        isUpdated_(neighbour_x, neighbour_y) = true;
+        updated_(neighbour_x, neighbour_y) = true;
         continue;
       }
 
@@ -409,7 +409,7 @@ void Solver::vStarSearch() {
       fScore_(neighbour_x, neighbour_y) = f;
 
       openSet_->push(Node{neighbour_x, neighbour_y, f});
-      isUpdated_(neighbour_x, neighbour_y) = true;
+      updated_(neighbour_x, neighbour_y) = true;
       ++nb_of_iterations_;
     }
   }
@@ -621,7 +621,7 @@ void Solver::computeDistanceFunction() {
     openSet_->push(Node{x, y, g});
 
     gScore_(x, y) = g;
-    isUpdated_(x, y) = true;
+    updated_(x, y) = true;
     cameFrom_(x, y) = nb_of_sources_;
     lightSources_[nb_of_sources_] = {x, y};
     const auto key = hashFunction(x, y, nb_of_sources_);
@@ -655,7 +655,7 @@ void Solver::computeDistanceFunction() {
           neighbour_y < 0) {
         continue;
       };
-      if (isUpdated_(neighbour_x, neighbour_y)) {
+      if (updated_(neighbour_x, neighbour_y)) {
         continue;
       };
 
@@ -681,7 +681,7 @@ void Solver::computeDistanceFunction() {
       gScore_(neighbour_x, neighbour_y) = distance;
       cameFrom_(neighbour_x, neighbour_y) = minimum_element->second;
       openSet_->push(Node{neighbour_x, neighbour_y, distance});
-      isUpdated_(neighbour_x, neighbour_y) = true;
+      updated_(neighbour_x, neighbour_y) = true;
     }
   };
 
@@ -723,7 +723,7 @@ inline void Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
     if (potentialSource_x >= nx_ || potentialSource_y >= ny_) {
       continue;
     };
-    if (!isUpdated_(potentialSource_x, potentialSource_y)) {
+    if (!updated_(potentialSource_x, potentialSource_y)) {
       continue;
     };
 
