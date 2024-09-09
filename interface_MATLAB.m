@@ -9,7 +9,12 @@ for iFig = 1:numel(FigList)
     end
 end
 
-system('vbm.bat');
+% run in linux and read the results in MATLAB, otherwise
+% sample run script for windows after compiling the code
+% system('vbm.bat');
+% fix the path to MATLAB
+% set path=%path:C:\Program Files\MATLAB\R2020b\bin\win64;=%
+% vbm.exe
 
 %% Parser - parse settings
 % Open the file for reading
