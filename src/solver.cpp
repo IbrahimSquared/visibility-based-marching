@@ -830,6 +830,12 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
   double v = 0;
   double c = 0;
 
+  // check if out of range, return
+  // if (!isValid(x, y)) {
+  //   visibilityHashMap_[hashFunction(x, y, lightSourceNumber)] = 0;
+  //   return;
+  // }
+
   // Check if visibility value already exists
   auto key = hashFunction(x, y, lightSourceNumber);
   if (visibilityHashMap_.count(key)) {
@@ -1145,21 +1151,23 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) const {
     }
   }
 
-  // compute the step size based on the max and min values
-  int number_of_contour_lines = sharedConfig_->number_of_contour_lines;
-  double stepSize = (maxVal - minVal) / number_of_contour_lines;
+  if (sharedConfig_->contourLines) {
+    // compute the step size based on the max and min values
+    int number_of_contour_lines = sharedConfig_->number_of_contour_lines;
+    double stepSize = (maxVal - minVal) / number_of_contour_lines;
 
-  std::vector<double> contourLevels;
-  for (double level = minVal; level <= maxVal; level += stepSize) {
-    contourLevels.push_back(level);
-  }
-  // Draw contour lines on the image
-  for (double level : contourLevels) {
-    for (int i = 0; i < width; ++i) {
-      for (int j = 0; j < height; ++j) {
-        double value = gScore(i, j);
-        if (std::abs(value - level) <= stepSize / 15) {
-          image.setPixel(i, j, sf::Color::Black);
+    std::vector<double> contourLevels;
+    for (double level = minVal; level <= maxVal; level += stepSize) {
+      contourLevels.push_back(level);
+    }
+    // Draw contour lines on the image
+    for (double level : contourLevels) {
+      for (int i = 0; i < width; ++i) {
+        for (int j = 0; j < height; ++j) {
+          double value = gScore(i, j);
+          if (std::abs(value - level) <= stepSize / 15) {
+            image.setPixel(i, j, sf::Color::Black);
+          }
         }
       }
     }

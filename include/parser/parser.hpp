@@ -46,6 +46,7 @@ struct Config {
   bool saveDistanceFunctionImage = true;
   int ballRadius = 5;
   int number_of_contour_lines = 50;
+  bool contourLines = false;
 };
 
 class ConfigParser {

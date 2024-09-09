@@ -406,6 +406,16 @@ bool ConfigParser::parse(const std::string &filename) {
         std::cerr << "It must be an integer\n";
         return false;
       }
+    } else if (key == "contourLines") {
+      if (value == "0" || value == "false") {
+        config_.contourLines = false;
+      } else if (value == "1" || value == "true") {
+        config_.contourLines = true;
+      } else {
+        std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
+      }
     } else {
       std::cerr << "Invalid/Irrelevant key: " << key << '\n';
       std::cerr << "Ignoring...\n";
