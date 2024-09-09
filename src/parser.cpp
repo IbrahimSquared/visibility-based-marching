@@ -382,9 +382,9 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "saveDistanceFunctionImage") {
       if (value == "0" || value == "false") {
-        config_.saveVisibilityBasedSolverImage = false;
+        config_.saveDistanceFunctionImage = false;
       } else if (value == "1" || value == "true") {
-        config_.saveVisibilityBasedSolverImage = true;
+        config_.saveDistanceFunctionImage = true;
       } else {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a boolean\n";
