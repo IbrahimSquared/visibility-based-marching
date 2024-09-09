@@ -930,7 +930,7 @@ void Solver::updatePointVisibility(const size_t lightSourceNumber,
       if (LS_x - x == LS_y - y) {
         v = visibilityHashMap_.at(key);
       } else if (LS_x - x < LS_y - y) {
-        const auto key_1 = (y + 1) + nx_ * x + ny_ * nx_ * lightSourceNumber;
+        const auto key_1 = hashFunction(x, y + 1, lightSourceNumber);
         if (!visibilityHashMap_.count(key_1)) {
           updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
         }
