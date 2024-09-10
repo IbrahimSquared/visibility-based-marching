@@ -761,7 +761,7 @@ void Solver::getPotentialDistances(
     // update visibility from source
     updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
                           neighbour_y);
-    distance = INFINITY;
+    distance = std::numeric_limits<double>::infinity();
     const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
     if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
       distance = gScore_(LS_x, LS_y) +
@@ -789,7 +789,7 @@ void Solver::getPotentialDistancesSpeedField(
     // update visibility from source
     updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
                           neighbour_y);
-    distance = INFINITY;
+    distance = std::numeric_limits<double>::infinity();
     const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
     if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
       distance =
@@ -1005,7 +1005,7 @@ void Solver::reconstructPath(const Node &current,
   std::vector<point> resultingPath;
   int x = current.x, y = current.y;
   double t = cameFrom_(x, y);
-  double t_old = INFINITY;
+  double t_old = std::numeric_limits<double>::infinity();
   while (t != t_old) {
     resultingPath.push_back({x, y});
     t_old = t;
