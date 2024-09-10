@@ -204,7 +204,13 @@ void Solver::visibilityBasedSolver() {
         continue;
       }
 
-      queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
+      // in case only 1 source so far, no need to queue potential parents
+      if (nb_of_sources_ == 1) {
+        potentialSources.clear();
+        potentialSources.push_back(0);
+      } else {
+        queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
+      }
       getPotentialDistancesSpeedField(potentialSources, potentialDistances,
                                       neighbour_x, neighbour_y);
 
