@@ -107,10 +107,24 @@ private:
                              const int lightSource_x, const int lightSource_y,
                              const int x, const int y);
 
+  // inline const int hashFunction(const int x, const int y,
+  //                               const int lightSourceNumber) const {
+  //   const auto key = y + nx_ * x + nx_ * ny_ * lightSourceNumber;
+  //   return key;
+  // }
+
+  // Another possible hash function that is more evenly distributed
   inline const int hashFunction(const int x, const int y,
                                 const int lightSourceNumber) const {
-    const auto key = y + nx_ * x + nx_ * ny_ * lightSourceNumber;
-    return key;
+    const int prime1 = 73856093;
+    const int prime2 = 19349663;
+    const int prime3 = 83492791;
+
+    // Mix the input values using primes and combine them
+    const auto key = (x * prime1) ^ (y * prime2) ^ (lightSourceNumber * prime3);
+    // return key;
+    const int modulus = 1000000007;
+    return key % modulus;
   }
 
   /*!
