@@ -8,7 +8,7 @@ Compared to SOTA marching methods:
 - Verified with Anya in obstacle-rich environments
 - Ability to march from multiple starting positions without wave collisions
 
-Paper to be attached soon. <br>
+([Preprint](https://ieeexplore.ieee.org/document/10679927). <br>
 Code developed for C++ 20. <br>
 The code has four main methods: <br>
 - visibilityBasedSolver: performs VBM <br>
