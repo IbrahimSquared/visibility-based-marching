@@ -72,14 +72,14 @@ private:
       std::vector<std::pair<double, size_t>> &potentialDistances,
       const int neighbour_x, const int neighbour_y);
 
-  inline const double evaluateDistance(const int x1, const int y1, const int x2,
-                                       const int y2) const {
+  inline double evaluateDistance(const int x1, const int y1, const int x2,
+                                 const int y2) const {
     return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
   };
-  inline const double evaluateDistanceSpeedField(const int source_x,
-                                                 const int source_y,
-                                                 const int target_x,
-                                                 const int target_y) const {
+  inline double evaluateDistanceSpeedField(const int source_x,
+                                           const int source_y,
+                                           const int target_x,
+                                           const int target_y) const {
     return sqrt((double)(source_x - target_x) * (source_x - target_x) +
                 (source_y - target_y) * (source_y - target_y)) *
            sharedSpeedField_->get(target_x, target_y);
@@ -107,15 +107,15 @@ private:
                              const int lightSource_x, const int lightSource_y,
                              const int x, const int y);
 
-  // inline const int hashFunction(const int x, const int y,
+  // inline int hashFunction(const int x, const int y,
   //                               const int lightSourceNumber) const {
   //   const auto key = y + nx_ * x + nx_ * ny_ * lightSourceNumber;
   //   return key;
   // }
 
   // Another possible hash function that is more evenly distributed
-  inline const int hashFunction(const int x, const int y,
-                                const int lightSourceNumber) const {
+  inline int hashFunction(const int x, const int y,
+                          const int lightSourceNumber) const {
     const int prime1 = 73856093;
     const int prime2 = 19349663;
     const int prime3 = 83492791;
@@ -133,8 +133,8 @@ private:
    * @param [in] y y position of the cell
    * @return true if cell is in grid, false otherwise
    */
-  inline const bool isValid(const int x, const int y) const {
-    return x >= 0 && x < nx_ && y >= 0 && y < ny_;
+  inline bool isValid(const size_t x, const size_t y) const {
+    return ((x < nx_) && (y < ny_));
   }
 
   std::shared_ptr<Field<double>> sharedVisibilityField_;

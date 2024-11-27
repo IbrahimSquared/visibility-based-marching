@@ -19,8 +19,8 @@ public:
     }
   }
 
-  inline T& operator()(size_t x, size_t y) { return data_[x + y * nx_]; }
-  inline const T& operator()(size_t x, size_t y) const { return data_[x + y * nx_]; }
+  inline T &operator()(size_t x, size_t y) { return data_[x + y * nx_]; }
+  inline T &operator()(size_t x, size_t y) const { return data_[x + y * nx_]; }
 
   void set(const size_t x, const size_t y, const T value) {
     data_[x + y * nx_] = value;
@@ -28,8 +28,8 @@ public:
   const T get(const size_t x, const size_t y) const {
     return data_[x + y * nx_];
   }
-  const size_t nx() const { return nx_; }
-  const size_t ny() const { return ny_; }
+  size_t nx() const { return nx_; }
+  size_t ny() const { return ny_; }
 
   // copy constructor
   Field(const Field &other)
