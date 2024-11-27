@@ -49,9 +49,8 @@ sf::Color getColor(double value) {
 /*****************************************************************************/
 /*****************************************************************************/
 Solver::Solver(Environment &env)
-    : sharedConfig_(env.getConfig()),
-      sharedVisibilityField_(env.getVisibilityField()),
-      sharedSpeedField_(env.getSpeedField()) {
+    : sharedVisibilityField_(env.getVisibilityField()),
+      sharedSpeedField_(env.getSpeedField()), sharedConfig_(env.getConfig()) {
   nx_ = sharedVisibilityField_->nx();
   ny_ = sharedVisibilityField_->ny();
   visibilityThreshold_ = sharedConfig_->visibilityThreshold;
@@ -129,7 +128,7 @@ void Solver::visibilityBasedSolver() {
     x = initial_frontline[i];
     y = ny_ - 1 - initial_frontline[i + 1];
     // check if starting positions are inside the map
-    if (x >= nx_ || y >= ny_) {
+    if (!isValid(x, y)) {
       std::cout << "###################### Visibility-based solver output "
                    "######################"
                 << std::endl;
@@ -272,7 +271,7 @@ void Solver::vStarSearch() {
   int endX = sharedConfig_->target_x;
   int endY = ny_ - 1 - sharedConfig_->target_y;
 
-  if (endX >= nx_ || endY >= ny_) {
+  if (!isValid(endX, endY)) {
     std::cout << "###################### VStar solver output "
                  "######################"
               << std::endl;
@@ -302,7 +301,7 @@ void Solver::vStarSearch() {
     x = initial_frontline[i];
     y = ny_ - 1 - initial_frontline[i + 1];
 
-    if (x >= nx_ || y >= ny_) {
+    if (!isValid(x, y)) {
       std::cout << "The starting position is outside the map" << std::endl;
       return;
     }
@@ -457,7 +456,7 @@ void Solver::aStarSearch() {
   const int endY = ny_ - 1 - sharedConfig_->target_y;
 
   // check if target is inside the map
-  if (endX >= nx_ || endY >= ny_) {
+  if (!isValid(endX, endY)) {
     std::cout << "###################### AStar solver output "
                  "######################"
               << std::endl;
@@ -493,7 +492,7 @@ void Solver::aStarSearch() {
     y = ny_ - 1 - initial_frontline[i + 1];
 
     // check if starting positions are inside the map
-    if (x >= nx_ || y >= ny_) {
+    if (!isValid(x, y)) {
       std::cout << "The starting position is outside the map" << std::endl;
       return;
     }
@@ -669,7 +668,7 @@ void Solver::computeDistanceFunction() {
 
       queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
       potentialDistances.clear();
-      for (int k = 0; k < potentialSources.size(); ++k) {
+      for (size_t k = 0; k < potentialSources.size(); ++k) {
         int potentialSource = potentialSources[k];
         int LS_x = lightSources_[potentialSource].x;
         int LS_y = lightSources_[potentialSource].y;
@@ -1084,7 +1083,7 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
   for (int i = -radius; i <= radius; ++i) {
     for (int j = -radius; j <= radius; ++j) {
       if (i * i + j * j <= radius * radius) {
-        if (x + i >= 0 && x + i < nx_ && y + j >= 0 && y + j < ny_) {
+        if (!isValid(x + i, y + j)) {
           image.setPixel(x + i, y + j, color.Green);
         }
       }
@@ -1095,7 +1094,7 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
   for (int i = -radius; i <= radius; ++i) {
     for (int j = -radius; j <= radius; ++j) {
       if (i * i + j * j <= radius * radius) {
-        if (x + i >= 0 && x + i < nx_ && y + j >= 0 && y + j < ny_) {
+        if (!isValid(x + i, y + j)) {
           image.setPixel(x + i, y + j, color.Red);
         }
       }
@@ -1155,7 +1154,7 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) const {
     for (int i = -radius; i <= radius; ++i) {
       for (int j = -radius; j <= radius; ++j) {
         if (i * i + j * j <= radius * radius) {
-          if (x0 + i >= 0 && x0 + i < nx_ && y0 + j >= 0 && y0 + j < ny_) {
+          if (!isValid(x0 + i, y0 + j)) {
             image.setPixel(x0 + i, y0 + j, color.Green);
           }
         }
