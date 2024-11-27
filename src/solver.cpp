@@ -1083,7 +1083,7 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
   for (int i = -radius; i <= radius; ++i) {
     for (int j = -radius; j <= radius; ++j) {
       if (i * i + j * j <= radius * radius) {
-        if (!isValid(x + i, y + j)) {
+        if (isValid(x + i, y + j)) {
           image.setPixel(x + i, y + j, color.Green);
         }
       }
@@ -1094,7 +1094,7 @@ void Solver::saveImageWithPath(const std::vector<point> &path,
   for (int i = -radius; i <= radius; ++i) {
     for (int j = -radius; j <= radius; ++j) {
       if (i * i + j * j <= radius * radius) {
-        if (!isValid(x + i, y + j)) {
+        if (isValid(x + i, y + j)) {
           image.setPixel(x + i, y + j, color.Red);
         }
       }
@@ -1154,7 +1154,7 @@ void Solver::saveVisibilityBasedSolverImage(const Field<double> &gScore) const {
     for (int i = -radius; i <= radius; ++i) {
       for (int j = -radius; j <= radius; ++j) {
         if (i * i + j * j <= radius * radius) {
-          if (!isValid(x0 + i, y0 + j)) {
+          if (isValid(x0 + i, y0 + j)) {
             image.setPixel(x0 + i, y0 + j, color.Green);
           }
         }
