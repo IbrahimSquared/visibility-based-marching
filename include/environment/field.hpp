@@ -20,7 +20,9 @@ public:
   }
 
   inline T &operator()(size_t x, size_t y) { return data_[x + y * nx_]; }
-  inline const T &operator()(size_t x, size_t y) const { return data_[x + y * nx_]; }
+  inline const T &operator()(size_t x, size_t y) const {
+    return data_[x + y * nx_];
+  }
 
   void set(const size_t x, const size_t y, const T value) {
     data_[x + y * nx_] = value;
