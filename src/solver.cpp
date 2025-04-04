@@ -56,7 +56,7 @@ Solver::Solver(Environment &env)
   visibilityThreshold_ = sharedConfig_->visibilityThreshold;
 
   // Init environment image
-  uniqueLoadedImage_.reset(std::make_unique<sf::Image>().release());
+  uniqueLoadedImage_ = std::make_unique<sf::Image>();
   uniqueLoadedImage_->create(nx_, ny_, sf::Color::Black);
   sf::Color color;
   color.a = 1;
