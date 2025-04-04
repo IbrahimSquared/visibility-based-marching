@@ -83,7 +83,8 @@ void Solver::reset() {
   inOpenSet_.reset(nx_, ny_, false);
   updated_.reset(nx_, ny_, false);
 
-  lightSources_.reset(new point[nx_ * ny_]);
+  lightSources_.clear();
+  lightSources_.reserve(nx_ * ny_);
 
   visibilityHashMap_.clear();
   openSet_.reset();
@@ -95,7 +96,6 @@ void Solver::reset() {
       std::less<Node>(), std::move(container));
   openSet_ = std::make_unique<std::priority_queue<Node>>(heap);
 
-  nb_of_sources_ = 0;
   nb_of_iterations_ = 0;
 
   // Reserve hash map
@@ -149,13 +149,13 @@ void Solver::visibilityBasedSolver() {
     d = 0;
     gScore_(x, y) = d;
     updated_(x, y) = true;
-    cameFrom_(x, y) = nb_of_sources_;
-    lightSources_[nb_of_sources_] = {x, y};
+    const size_t newSourceIndex = lightSources_.size();
+    cameFrom_(x, y) = newSourceIndex;
+    lightSources_.push_back({x, y});
 
     openSet_->push(Node{x, y, d});
-    const auto key = hashFunction(x, y, nb_of_sources_);
+    const auto key = hashFunction(x, y, newSourceIndex);
     visibilityHashMap_[key] = lightStrength_;
-    ++nb_of_sources_;
     ++nb_of_iterations_;
   }
 
@@ -193,10 +193,6 @@ void Solver::visibilityBasedSolver() {
               evaluateDistanceSpeedField(x, y, neighbour_x, neighbour_y);
           openSet_->push(Node{neighbour_x, neighbour_y,
                               gScore_(neighbour_x, neighbour_y)});
-          const auto key = hashFunction(x, y, nb_of_sources_);
-          visibilityHashMap_[key] =
-              sharedVisibilityField_->get(neighbour_x, neighbour_y);
-          ;
         }
         cameFrom_(neighbour_x, neighbour_y) = cameFrom_(x, y);
         updated_(neighbour_x, neighbour_y) = true;
@@ -204,7 +200,7 @@ void Solver::visibilityBasedSolver() {
       }
 
       // in case only 1 source so far, no need to queue potential parents
-      if (nb_of_sources_ == 1) {
+      if (lightSources_.size() == 1) {
         potentialSources.clear();
         potentialSources.push_back(0);
       } else {
@@ -247,7 +243,7 @@ void Solver::visibilityBasedSolver() {
       std::cout << "Load factor: " << visibilityHashMap_.load_factor()
                 << std::endl;
       std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
-      std::cout << "Nb of sources: " << nb_of_sources_ << std::endl;
+      std::cout << "Nb of sources: " << lightSources_.size() << std::endl;
     }
   }
   if (sharedConfig_->saveResults) {
@@ -320,12 +316,12 @@ void Solver::vStarSearch() {
 
     gScore_(x, y) = g;
     fScore_(x, y) = f;
-    cameFrom_(x, y) = nb_of_sources_;
+    const size_t newSourceIndex = lightSources_.size();
+    cameFrom_(x, y) = newSourceIndex;
     updated_(x, y) = true;
-    lightSources_[nb_of_sources_] = {x, y};
-    const auto key = hashFunction(x, y, nb_of_sources_);
+    lightSources_.push_back({x, y});
+    const auto key = hashFunction(x, y, newSourceIndex);
     visibilityHashMap_[key] = lightStrength_;
-    ++nb_of_sources_;
     ++nb_of_iterations_;
   }
 
@@ -386,7 +382,7 @@ void Solver::vStarSearch() {
       }
 
       // in case only 1 source so far, no need to queue potential parents
-      if (nb_of_sources_ == 1) {
+      if (lightSources_.size() == 1) {
         potentialSources.clear();
         potentialSources.push_back(0);
       } else {
@@ -630,11 +626,11 @@ void Solver::computeDistanceFunction() {
 
     gScore_(x, y) = g;
     updated_(x, y) = true;
-    cameFrom_(x, y) = nb_of_sources_;
-    lightSources_[nb_of_sources_] = {x, y};
-    const auto key = hashFunction(x, y, nb_of_sources_);
+    const size_t newSourceIndex = lightSources_.size();
+    cameFrom_(x, y) = newSourceIndex;
+    lightSources_.push_back({x, y});
+    const auto key = hashFunction(x, y, newSourceIndex);
     visibilityHashMap_[key] = lightStrength_;
-    ++nb_of_sources_;
   }
 
   // For queing unique sources from neighbours of neighbour
@@ -807,9 +803,10 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
                             const int neighbour_y) {
   int pivot_neighbour_x, pivot_neighbour_y;
   // Pushback parent as a new lightSource
-  lightSources_[nb_of_sources_] = {x, y}; // {x, y};
+  const size_t newSourceIndex = lightSources_.size();
+  lightSources_.push_back({x, y});
   // Pusback pivot & update light source visibility
-  const auto key = hashFunction(x, y, nb_of_sources_);
+  const auto key = hashFunction(x, y, newSourceIndex);
   visibilityHashMap_[key] = lightStrength_;
   // Update maps of new pivot_
   // Update neighbours of initial frontline points - both distance & visibility
@@ -822,13 +819,12 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
       continue;
     }
     // Update neighbour visibility
-    updatePointVisibility(nb_of_sources_, x, y, pivot_neighbour_x,
+    updatePointVisibility(newSourceIndex, x, y, pivot_neighbour_x,
                           pivot_neighbour_y);
   }
-  cameFrom_(neighbour_x, neighbour_y) = nb_of_sources_;
+  cameFrom_(neighbour_x, neighbour_y) = newSourceIndex;
   gScore_(neighbour_x, neighbour_y) =
       gScore_(x, y) + evaluateDistance(x, y, neighbour_x, neighbour_y);
-  ++nb_of_sources_;
 }
 
 /*****************************************************************************/
@@ -1344,7 +1340,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
         return;
       }
       std::ostream &os = of3;
-      for (size_t i = 0; i < nb_of_sources_; ++i) {
+      for (size_t i = 0; i < lightSources_.size(); ++i) {
         os << lightSources_[i].x << " " << ny_ - 1 - lightSources_[i].y;
         os << "\n";
       }
@@ -1426,7 +1422,7 @@ void Solver::saveResults(const std::vector<point> &resultingPath,
       return;
     }
     std::ostream &os = of3;
-    for (size_t i = 0; i < nb_of_sources_; ++i) {
+    for (size_t i = 0; i < lightSources_.size(); ++i) {
       os << lightSources_[i].x << " " << ny_ - 1 - lightSources_[i].y;
       os << "\n";
     }

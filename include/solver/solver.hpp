@@ -147,13 +147,12 @@ private:
   Field<bool> updated_;
 
   std::shared_ptr<Config> sharedConfig_;
-  std::unique_ptr<point[]> lightSources_;
+  std::vector<point> lightSources_;
 
   // Lightstrength, can be decreased. Can add later an alpha that has light
   // decay, enforcing adding a new pivot periodically.
   const double lightStrength_ = 1.0;
   int nb_of_iterations_ = 0;
-  size_t nb_of_sources_ = 0;
 
   // Neighbours
   // [1 0; 0 1; -1 0; 0 -1; 1 1; -1 1; -1 -1; 1 -1] flattened out
