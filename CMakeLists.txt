@@ -5,7 +5,7 @@ project(vbm)
 # set the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 # set the C++ compiler version
-set(CMAKE_CXX_COMPILER "g++-11")
+# set(CMAKE_CXX_COMPILER "g++-11")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
