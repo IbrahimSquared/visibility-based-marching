@@ -159,11 +159,10 @@ void Solver::visibilityBasedSolver() {
     ++nb_of_iterations_;
   }
 
-  // For queing unique sources from neighbours of neighbour
-  std::vector<size_t> potentialSources;
-  potentialSources.reserve(10);
-  std::vector<std::pair<double, size_t>> potentialDistances;
-  potentialDistances.reserve(10);
+  // For queing unique sources from neighbours of neighbour. At most the
+  // 8-neighborhood can contribute unique sources, so avoid heap-backed vectors.
+  CandidateSources potentialSources;
+  PotentialDistance bestPotentialDistance;
 
   double distance = 0;
 
@@ -202,26 +201,20 @@ void Solver::visibilityBasedSolver() {
       // in case only 1 source so far, no need to queue potential parents
       if (lightSources_.size() == 1) {
         potentialSources.clear();
-        potentialSources.push_back(0);
+        potentialSources.addUnique(0);
       } else {
         queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
       }
-      getPotentialDistancesSpeedField(potentialSources, potentialDistances,
-                                      neighbour_x, neighbour_y);
-
-      auto minimum_element =
-          std::min_element(potentialDistances.begin(), potentialDistances.end(),
-                           [](const auto &lhs, const auto &rhs) {
-                             return lhs.first < rhs.first;
-                           });
-      distance = minimum_element->first;
+      bestPotentialDistance = getPotentialDistanceSpeedField(
+          potentialSources, neighbour_x, neighbour_y);
+      distance = bestPotentialDistance.distance;
 
       if (distance == std::numeric_limits<double>::infinity()) {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
-        gScore_(neighbour_x, neighbour_y) = minimum_element->first;
-        cameFrom_(neighbour_x, neighbour_y) = minimum_element->second;
+        gScore_(neighbour_x, neighbour_y) = distance;
+        cameFrom_(neighbour_x, neighbour_y) = bestPotentialDistance.source;
       }
       openSet_->push(
           Node{neighbour_x, neighbour_y, gScore_(neighbour_x, neighbour_y)});
@@ -325,11 +318,10 @@ void Solver::vStarSearch() {
     ++nb_of_iterations_;
   }
 
-  // For queing unique sources from neighbours of neighbour
-  std::vector<size_t> potentialSources;
-  potentialSources.reserve(10);
-  std::vector<std::pair<double, size_t>> potentialDistances;
-  potentialDistances.reserve(10);
+  // For queing unique sources from neighbours of neighbour. At most the
+  // 8-neighborhood can contribute unique sources, so avoid heap-backed vectors.
+  CandidateSources potentialSources;
+  PotentialDistance bestPotentialDistance;
 
   double distance = 0;
 
@@ -384,26 +376,20 @@ void Solver::vStarSearch() {
       // in case only 1 source so far, no need to queue potential parents
       if (lightSources_.size() == 1) {
         potentialSources.clear();
-        potentialSources.push_back(0);
+        potentialSources.addUnique(0);
       } else {
         queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
       }
-      getPotentialDistances(potentialSources, potentialDistances, neighbour_x,
-                            neighbour_y);
-
-      auto minimum_element =
-          std::min_element(potentialDistances.begin(), potentialDistances.end(),
-                           [](const auto &lhs, const auto &rhs) {
-                             return lhs.first < rhs.first;
-                           });
-      distance = minimum_element->first;
+      bestPotentialDistance =
+          getPotentialDistance(potentialSources, neighbour_x, neighbour_y);
+      distance = bestPotentialDistance.distance;
 
       if (distance == std::numeric_limits<double>::infinity()) {
         createNewPivot(x, y, neighbour_x, neighbour_y);
       } else {
         // use source giving least distance
-        gScore_(neighbour_x, neighbour_y) = minimum_element->first;
-        cameFrom_(neighbour_x, neighbour_y) = minimum_element->second;
+        gScore_(neighbour_x, neighbour_y) = distance;
+        cameFrom_(neighbour_x, neighbour_y) = bestPotentialDistance.source;
       }
 
       h = 0;
@@ -633,11 +619,10 @@ void Solver::computeDistanceFunction() {
     visibilityHashMap_[key] = lightStrength_;
   }
 
-  // For queing unique sources from neighbours of neighbour
-  std::vector<size_t> potentialSources;
-  potentialSources.reserve(10);
-  std::vector<std::pair<double, size_t>> potentialDistances;
-  potentialDistances.reserve(10);
+  // For queing unique sources from neighbours of neighbour. At most the
+  // 8-neighborhood can contribute unique sources, so avoid heap-backed vectors.
+  CandidateSources potentialSources;
+  PotentialDistance bestPotentialDistance;
 
   double distance = 0;
 
@@ -663,26 +648,12 @@ void Solver::computeDistanceFunction() {
       };
 
       queuePotentialSources(potentialSources, neighbour_x, neighbour_y);
-      potentialDistances.clear();
-      for (size_t k = 0; k < potentialSources.size(); ++k) {
-        int potentialSource = potentialSources[k];
-        int LS_x = lightSources_[potentialSource].x;
-        int LS_y = lightSources_[potentialSource].y;
-        distance = gScore_(LS_x, LS_y) +
-                   evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
-        potentialDistances.push_back(
-            std::pair<double, int>{distance, potentialSource});
-      }
-
-      auto minimum_element =
-          std::min_element(potentialDistances.begin(), potentialDistances.end(),
-                           [](const auto &lhs, const auto &rhs) {
-                             return lhs.first < rhs.first;
-                           });
-      distance = minimum_element->first;
+      bestPotentialDistance = getPotentialDistanceFunction(
+          potentialSources, neighbour_x, neighbour_y);
+      distance = bestPotentialDistance.distance;
       // use source giving least distance
       gScore_(neighbour_x, neighbour_y) = distance;
-      cameFrom_(neighbour_x, neighbour_y) = minimum_element->second;
+      cameFrom_(neighbour_x, neighbour_y) = bestPotentialDistance.source;
       openSet_->push(Node{neighbour_x, neighbour_y, distance});
       updated_(neighbour_x, neighbour_y) = true;
     }
@@ -712,88 +683,120 @@ void Solver::computeDistanceFunction() {
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-inline void Solver::queuePotentialSources(std::vector<size_t> &potentialSources,
+inline void Solver::queuePotentialSources(CandidateSources &potentialSources,
                                           const int neighbour_x,
                                           const int neighbour_y) const {
-  size_t potentialSource_x = 0, potentialSource_y = 0, lightSource_num = 0;
+  int potentialSource_x = 0, potentialSource_y = 0;
+  size_t lightSource_num = 0;
   potentialSources.clear();
-  // Queue sources from updated neighbours of neighbour
+
+  // Queue sources from updated neighbours of neighbour.
   for (size_t k = 0; k < 16; k += 2) {
-    // NOTE those are always positive
+    // NOTE those are always positive after the validity check.
     potentialSource_x = neighbour_x + neighbours_[k];
     potentialSource_y = neighbour_y + neighbours_[k + 1];
-    // Box check
+
+    // Box check. Negative ints convert to large size_t values here and fail.
     if (!isValid(potentialSource_x, potentialSource_y)) {
       continue;
-    };
+    }
     if (!updated_(potentialSource_x, potentialSource_y)) {
       continue;
-    };
+    }
 
     lightSource_num = cameFrom_(potentialSource_x, potentialSource_y);
-    // Pick only unique sources (no repitition in potentialSources)
-    if (std::find(potentialSources.begin(), potentialSources.end(),
-                  lightSource_num) == potentialSources.end()) {
-      potentialSources.push_back(lightSource_num);
-    }
+    // Pick only unique sources; there can be at most one per neighbouring cell.
+    potentialSources.addUnique(lightSource_num);
   }
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::getPotentialDistances(
-    const std::vector<size_t> &potentialSources,
-    std::vector<std::pair<double, size_t>> &potentialDistances,
-    const int neighbour_x, const int neighbour_y) {
-  size_t LS_x = 0, LS_y = 0, potentialSource = 0;
-  double distance = 0;
-  potentialDistances.clear();
-  for (size_t k = 0; k < potentialSources.size(); ++k) {
-    potentialSource = potentialSources[k];
-    LS_x = lightSources_[potentialSource].x;
-    LS_y = lightSources_[potentialSource].y;
-    // update visibility from source
-    updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
-                          neighbour_y);
-    distance = std::numeric_limits<double>::infinity();
-    const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
-    if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
-      distance = gScore_(LS_x, LS_y) +
-                 evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
+Solver::PotentialDistance
+Solver::getPotentialDistance(const CandidateSources &potentialSources,
+                             const int neighbour_x, const int neighbour_y) {
+  PotentialDistance best;
+
+  for (std::uint8_t k = 0; k < potentialSources.size; ++k) {
+    const size_t potentialSource = potentialSources.values[k];
+    const int LS_x = lightSources_[potentialSource].x;
+    const int LS_y = lightSources_[potentialSource].y;
+
+    const double visibility = updatePointVisibility(potentialSource, LS_x, LS_y,
+                                                    neighbour_x, neighbour_y);
+    if (visibility < visibilityThreshold_) {
+      continue;
     }
-    potentialDistances.push_back(
-        std::pair<double, int>{distance, potentialSource});
+
+    const double distance =
+        gScore_(LS_x, LS_y) +
+        evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
+    if (distance < best.distance) {
+      best.distance = distance;
+      best.source = potentialSource;
+    }
   }
+
+  return best;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::getPotentialDistancesSpeedField(
-    const std::vector<size_t> &potentialSources,
-    std::vector<std::pair<double, size_t>> &potentialDistances,
-    const int neighbour_x, const int neighbour_y) {
-  size_t LS_x = 0, LS_y = 0, potentialSource = 0;
-  double distance = 0;
-  potentialDistances.clear();
-  for (size_t k = 0; k < potentialSources.size(); ++k) {
-    potentialSource = potentialSources[k];
-    LS_x = lightSources_[potentialSource].x;
-    LS_y = lightSources_[potentialSource].y;
-    // update visibility from source
-    updatePointVisibility(potentialSource, LS_x, LS_y, neighbour_x,
-                          neighbour_y);
-    distance = std::numeric_limits<double>::infinity();
-    const auto key = hashFunction(neighbour_x, neighbour_y, potentialSource);
-    if (visibilityHashMap_.at(key) >= visibilityThreshold_) {
-      distance =
-          gScore_(LS_x, LS_y) +
-          evaluateDistanceSpeedField(LS_x, LS_y, neighbour_x, neighbour_y);
+Solver::PotentialDistance
+Solver::getPotentialDistanceSpeedField(const CandidateSources &potentialSources,
+                                       const int neighbour_x,
+                                       const int neighbour_y) {
+  PotentialDistance best;
+
+  for (std::uint8_t k = 0; k < potentialSources.size; ++k) {
+    const size_t potentialSource = potentialSources.values[k];
+    const int LS_x = lightSources_[potentialSource].x;
+    const int LS_y = lightSources_[potentialSource].y;
+
+    const double visibility = updatePointVisibility(potentialSource, LS_x, LS_y,
+                                                    neighbour_x, neighbour_y);
+    if (visibility < visibilityThreshold_) {
+      continue;
     }
-    potentialDistances.push_back(
-        std::pair<double, int>{distance, potentialSource});
+
+    const double distance =
+        gScore_(LS_x, LS_y) +
+        evaluateDistanceSpeedField(LS_x, LS_y, neighbour_x, neighbour_y);
+    if (distance < best.distance) {
+      best.distance = distance;
+      best.source = potentialSource;
+    }
   }
+
+  return best;
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+Solver::PotentialDistance
+Solver::getPotentialDistanceFunction(const CandidateSources &potentialSources,
+                                     const int neighbour_x,
+                                     const int neighbour_y) const {
+  PotentialDistance best;
+
+  for (std::uint8_t k = 0; k < potentialSources.size; ++k) {
+    const size_t potentialSource = potentialSources.values[k];
+    const int LS_x = lightSources_[potentialSource].x;
+    const int LS_y = lightSources_[potentialSource].y;
+
+    const double distance =
+        gScore_(LS_x, LS_y) +
+        evaluateDistance(LS_x, LS_y, neighbour_x, neighbour_y);
+    if (distance < best.distance) {
+      best.distance = distance;
+      best.source = potentialSource;
+    }
+  }
+
+  return best;
 }
 
 /*****************************************************************************/
@@ -830,166 +833,117 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::updatePointVisibility(const size_t lightSourceNumber,
-                                   const int LS_x, const int LS_y, const int x,
-                                   const int y) {
-  // Variable initialization
+double Solver::updatePointVisibility(const size_t lightSourceNumber,
+                                     const int LS_x, const int LS_y,
+                                     const int x, const int y) {
+  const auto key = hashFunction(x, y, lightSourceNumber);
+  if (auto it = visibilityHashMap_.find(key); it != visibilityHashMap_.end()) {
+    return it->second;
+  }
+
+  if (x == LS_x && y == LS_y) {
+    visibilityHashMap_[key] = lightStrength_;
+    return lightStrength_;
+  }
+
+  if (sharedVisibilityField_->get(x, y) < visibilityThreshold_) {
+    visibilityHashMap_[key] = 0;
+    return 0;
+  }
+
   double v = 0;
   double c = 0;
 
-  // check if out of range, return
-  // if (!isValid(x, y)) {
-  //   visibilityHashMap_[hashFunction(x, y, lightSourceNumber)] = 0;
-  //   return;
-  // }
-
-  // Check if visibility value already exists
-  auto key = hashFunction(x, y, lightSourceNumber);
-  if (visibilityHashMap_.count(key)) {
-    return;
-  }
-  if (sharedVisibilityField_->get(x, y) < visibilityThreshold_) {
-    visibilityHashMap_[key] = 0;
-    return;
-  }
-
   if (x == LS_x) {
     if (y - LS_y > 0) {
-      key = hashFunction(x, y - 1, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
-      }
-      v = visibilityHashMap_.at(key);
+      v = updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
     } else {
-      key = hashFunction(x, y + 1, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
-      }
-      v = visibilityHashMap_.at(key);
+      v = updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
     }
   } else if (y == LS_y) {
     if (x - LS_x > 0) {
-      key = hashFunction(x - 1, y, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
-      }
-      v = visibilityHashMap_.at(key);
+      v = updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
     } else {
-      key = hashFunction(x + 1, y, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
-      }
-      v = visibilityHashMap_.at(key);
+      v = updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
     }
   } else {
     // Q1
     if ((x - LS_x > 0) && (y - LS_y > 0)) {
-      key = hashFunction(x - 1, y - 1, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y - 1);
-      }
+      const double v_diag =
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y - 1);
       if (x - LS_x == y - LS_y) {
-        v = visibilityHashMap_.at(key);
+        v = v_diag;
       } else if (x - LS_x < y - LS_y) {
-        const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
-        }
+        const double v1 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
         c = static_cast<double>(x - LS_x) / (y - LS_y);
-        double v1 = visibilityHashMap_.at(key_1);
-        v = v1 - c * (v1 - visibilityHashMap_.at(key));
+        v = v1 - c * (v1 - v_diag);
       } else if (x - LS_x > y - LS_y) {
-        const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
-        }
+        const double v2 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
         c = static_cast<double>(y - LS_y) / (x - LS_x);
-        double v2 = visibilityHashMap_.at(key_2);
-        v = v2 - c * (v2 - visibilityHashMap_.at(key));
+        v = v2 - c * (v2 - v_diag);
       }
     }
     // Q2
     else if ((x - LS_x < 0) && (y - LS_y > 0)) {
-      key = hashFunction(x + 1, y - 1, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y - 1);
-      }
+      const double v_diag =
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y - 1);
       if (LS_x - x == y - LS_y) {
-        v = visibilityHashMap_.at(key);
+        v = v_diag;
       } else if (LS_x - x < y - LS_y) {
-        const auto key_1 = hashFunction(x, y - 1, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
-        }
+        const double v1 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y - 1);
         c = static_cast<double>(LS_x - x) / (y - LS_y);
-        double v1 = visibilityHashMap_.at(key_1);
-        v = v1 - c * (v1 - visibilityHashMap_.at(key));
+        v = v1 - c * (v1 - v_diag);
       } else if (LS_x - x > y - LS_y) {
-        const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
-        }
+        const double v2 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
         c = static_cast<double>(y - LS_y) / (LS_x - x);
-        double v2 = visibilityHashMap_.at(key_2);
-        v = v2 - c * (v2 - visibilityHashMap_.at(key));
+        v = v2 - c * (v2 - v_diag);
       }
     }
     // Q3
     else if ((x - LS_x < 0) && (y - LS_y < 0)) {
-      key = hashFunction(x + 1, y + 1, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y + 1);
-      }
+      const double v_diag =
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y + 1);
       if (LS_x - x == LS_y - y) {
-        v = visibilityHashMap_.at(key);
+        v = v_diag;
       } else if (LS_x - x < LS_y - y) {
-        const auto key_1 = hashFunction(x, y + 1, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
-        }
+        const double v1 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
         c = static_cast<double>(LS_x - x) / (LS_y - y);
-        double v1 = visibilityHashMap_.at(key_1);
-        v = v1 - c * (v1 - visibilityHashMap_.at(key));
+        v = v1 - c * (v1 - v_diag);
       } else if (LS_x - x > LS_y - y) {
-        const auto key_2 = hashFunction(x + 1, y, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
-        }
+        const double v2 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x + 1, y);
         c = static_cast<double>(LS_y - y) / (LS_x - x);
-        double v2 = visibilityHashMap_.at(key_2);
-        v = v2 - c * (v2 - visibilityHashMap_.at(key));
+        v = v2 - c * (v2 - v_diag);
       }
     }
     // Q4
     else if ((x - LS_x > 0) && (y - LS_y < 0)) {
-      key = hashFunction(x - 1, y + 1, lightSourceNumber);
-      if (!visibilityHashMap_.count(key)) {
-        updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y + 1);
-      }
+      const double v_diag =
+          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y + 1);
       if (x - LS_x == LS_y - y) {
-        v = visibilityHashMap_.at(key);
+        v = v_diag;
       } else if (x - LS_x < LS_y - y) {
-        const auto key_1 = hashFunction(x, y + 1, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_1)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
-        }
+        const double v1 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x, y + 1);
         c = static_cast<double>(x - LS_x) / (LS_y - y);
-        double v1 = visibilityHashMap_.at(key_1);
-        v = v1 - c * (v1 - visibilityHashMap_.at(key));
+        v = v1 - c * (v1 - v_diag);
       } else if (x - LS_x > LS_y - y) {
-        const auto key_2 = hashFunction(x - 1, y, lightSourceNumber);
-        if (!visibilityHashMap_.count(key_2)) {
-          updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
-        }
+        const double v2 =
+            updatePointVisibility(lightSourceNumber, LS_x, LS_y, x - 1, y);
         c = static_cast<double>(LS_y - y) / (x - LS_x);
-        double v2 = visibilityHashMap_.at(key_2);
-        v = v2 - c * (v2 - visibilityHashMap_.at(key));
+        v = v2 - c * (v2 - v_diag);
       }
     }
   }
-  v = v * sharedVisibilityField_->get(x, y);
-  key = hashFunction(x, y, lightSourceNumber);
+
+  v *= sharedVisibilityField_->get(x, y);
   visibilityHashMap_[key] = v;
+  return v;
 }
 
 /*****************************************************************************/

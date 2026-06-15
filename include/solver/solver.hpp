@@ -1,7 +1,13 @@
 #ifndef SOLVER_HPP
 #define SOLVER_HPP
 
+#include <algorithm>
+#include <array>
+#include <cassert>
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
+#include <limits>
 #include <queue>
 #include <vector>
 
@@ -38,6 +44,30 @@ public:
   inline int getNbOfIterations() const { return nb_of_iterations_; };
 
 private:
+  struct CandidateSources {
+    std::array<size_t, 8> values{};
+    std::uint8_t size = 0;
+
+    inline void clear() noexcept { size = 0; }
+
+    inline void addUnique(const size_t source) noexcept {
+      for (std::uint8_t i = 0; i < size; ++i) {
+        if (values[i] == source) {
+          return;
+        }
+      }
+      assert(size < values.size());
+      if (size < values.size()) {
+        values[size++] = source;
+      }
+    }
+  };
+
+  struct PotentialDistance {
+    double distance = std::numeric_limits<double>::infinity();
+    size_t source = 0;
+  };
+
   void reset();
   void reconstructPath(const Node &current, const std::string &methodName);
   inline int indexAt(const size_t x, const size_t y) const {
@@ -50,27 +80,33 @@ private:
   }
 
   /*!
-   * @brief queues sources
+   * @brief queues unique sources from updated neighbors of queried cell.
    */
-  inline void queuePotentialSources(std::vector<size_t> &potentialSources,
+  inline void queuePotentialSources(CandidateSources &potentialSources,
                                     const int neighbour_x,
                                     const int neighbour_y) const;
 
   /*!
-   * @brief gets distances
+   * @brief returns best visible source/distance candidate for VStar.
    */
-  inline void getPotentialDistances(
-      const std::vector<size_t> &potentialSources,
-      std::vector<std::pair<double, size_t>> &potentialDistances,
-      const int neighbour_x, const int neighbour_y);
+  inline PotentialDistance
+  getPotentialDistance(const CandidateSources &potentialSources,
+                       const int neighbour_x, const int neighbour_y);
 
   /*!
-   * @brief gets distances
+   * @brief returns best visible source/distance candidate for speed-field VBM.
    */
-  inline void getPotentialDistancesSpeedField(
-      const std::vector<size_t> &potentialSources,
-      std::vector<std::pair<double, size_t>> &potentialDistances,
-      const int neighbour_x, const int neighbour_y);
+  inline PotentialDistance
+  getPotentialDistanceSpeedField(const CandidateSources &potentialSources,
+                                 const int neighbour_x, const int neighbour_y);
+
+  /*!
+   * @brief returns best source/distance candidate for plain distance function.
+   */
+  inline PotentialDistance
+  getPotentialDistanceFunction(const CandidateSources &potentialSources,
+                               const int neighbour_x,
+                               const int neighbour_y) const;
 
   inline double evaluateDistance(const int x1, const int y1, const int x2,
                                  const int y2) const {
@@ -102,29 +138,24 @@ private:
    * @param [in] lightSource_y y position of the lightsource.
    * @param [in] x position of our queried pixel.
    * @param [in] y position of our queried pixel.
+   * @return computed or cached visibility value for (x, y, lightSourceNumber).
    */
-  void updatePointVisibility(const size_t lightSourceNumber,
-                             const int lightSource_x, const int lightSource_y,
-                             const int x, const int y);
+  double updatePointVisibility(const size_t lightSourceNumber,
+                               const int lightSource_x, const int lightSource_y,
+                               const int x, const int y);
 
-  // inline int hashFunction(const int x, const int y,
-  //                               const int lightSourceNumber) const {
-  //   const auto key = y + nx_ * x + nx_ * ny_ * lightSourceNumber;
-  //   return key;
-  // }
+  // Collision-free row-major key for the logical tuple
+  // (x, y, lightSourceNumber). This is a stored map key, not merely a bucket
+  // hash, so collisions would alias distinct visibility values.
+  inline size_t hashFunction(const int x, const int y,
+                             const size_t lightSourceNumber) const noexcept {
+    assert(x >= 0);
+    assert(y >= 0);
+    assert(static_cast<size_t>(x) < nx_);
+    assert(static_cast<size_t>(y) < ny_);
 
-  // Another possible hash function that is more evenly distributed
-  inline int hashFunction(const int x, const int y,
-                          const int lightSourceNumber) const {
-    const int prime1 = 73856093;
-    const int prime2 = 19349663;
-    const int prime3 = 83492791;
-
-    // Mix the input values using primes and combine them
-    const auto key = (x * prime1) ^ (y * prime2) ^ (lightSourceNumber * prime3);
-    // return key;
-    const int modulus = 1000000007;
-    return key % modulus;
+    return static_cast<size_t>(x) +
+           nx_ * (static_cast<size_t>(y) + ny_ * lightSourceNumber);
   }
 
   /*!
