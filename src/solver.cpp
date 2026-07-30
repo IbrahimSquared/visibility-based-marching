@@ -501,9 +501,16 @@ void Solver::aStarSearch() {
   }
 
   while (openSet_->size() > 0) {
-    auto &current = openSet_->top();
+    Node current = openSet_->top();
+    openSet_->pop();
+
     x = current.x;
     y = current.y;
+
+    // Re-pushed improvements leave older entries in the queue.
+    if (current.f > fScore_(x, y)) {
+      continue;
+    }
 
     if (x == endX && y == endY) {
       const auto stopTime = std::chrono::high_resolution_clock::now();
@@ -527,7 +534,6 @@ void Solver::aStarSearch() {
       return;
     }
 
-    openSet_->pop();
     inOpenSet_(x, y) = false;
 
     // Expand frontline at current & update neighbours
@@ -551,20 +557,17 @@ void Solver::aStarSearch() {
 
       cameFrom_(neighbour_x, neighbour_y) = indexAt(x, y);
       gScore_(neighbour_x, neighbour_y) = g;
-      ;
+
+      h = 0.0;
       if (sharedConfig_->greedy) {
         h = evaluateDistance(neighbour_x, neighbour_y, endX, endY);
       }
-      f = gScore_(neighbour_x, neighbour_y) + h;
+      f = g + h;
       fScore_(neighbour_x, neighbour_y) = f;
       ++nb_of_iterations_;
-      if (inOpenSet_(neighbour_x, neighbour_y)) {
-        continue;
-      }
 
       openSet_->push(Node{neighbour_x, neighbour_y, f});
       inOpenSet_(neighbour_x, neighbour_y) = true;
-      ;
     }
   };
 
