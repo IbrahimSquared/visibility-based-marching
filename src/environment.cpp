@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 namespace vbm {
@@ -27,14 +28,16 @@ Environment::Environment(Config &config)
     }
   } else if (sharedConfig_->mode == 2) {
     // loadMaps(sharedConfig_->imagePath);
-    if (loadImage(sharedConfig_->imagePath)) {
-      if (sharedConfig_->saveResults) {
-        saveEnvironment();
-      }
-    } else {
-      std::cerr << "Failed to load image" << std::endl;
-      return;
+    if (!loadImage(sharedConfig_->imagePath)) {
+      throw std::runtime_error("Failed to load environment image: " +
+                               sharedConfig_->imagePath);
     }
+    if (sharedConfig_->saveResults) {
+      saveEnvironment();
+    }
+  } else {
+    throw std::invalid_argument("Unsupported environment mode: " +
+                                std::to_string(sharedConfig_->mode));
   }
 }
 
@@ -183,10 +186,9 @@ std::vector<float> Environment::stringToFloatVector(const std::string &str,
 /*****************************************************************************/
 /*****************************************************************************/
 bool Environment::loadImage(const std::string &filename) {
-  uniqueLoadedImage_.reset(std::make_unique<sf::Image>().release());
+  uniqueLoadedImage_ = std::make_unique<sf::Image>();
   // Load the image from a file
   if (!uniqueLoadedImage_->loadFromFile(filename)) {
-    std::cout << "Error: Failed to load image" << std::endl;
     return false;
   } else {
     auto size = uniqueLoadedImage_->getSize();

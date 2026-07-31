@@ -66,9 +66,9 @@ public:
   ~Environment() = default;
 
 private:
-  size_t ny_;
-  size_t nx_;
-  size_t size_;
+  size_t ny_ = 0;
+  size_t nx_ = 0;
+  size_t size_ = 0;
   double speedValue_ = 2.0;
   int seedValue_ = 1;
 
