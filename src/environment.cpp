@@ -252,9 +252,10 @@ void Environment::saveEnvironment() {
       return;
     }
     std::ostream &os = of;
-    for (int j = ny_ - 1; j >= 0; --j) {
-      for (size_t i = 0; i < nx_; ++i) {
-        os << sharedVisibilityField_->get(i, j) << " ";
+    for (size_t row = ny_; row > 0; --row) {
+      const size_t y = row - 1;
+      for (size_t x = 0; x < nx_; ++x) {
+        os << sharedVisibilityField_->get(x, y) << " ";
       }
       os << "\n";
     }
@@ -273,9 +274,10 @@ void Environment::saveEnvironment() {
       return;
     }
     std::ostream &os = of;
-    for (size_t i = 0; i < nx_; ++i) {
-      for (size_t j = 0; j < ny_; ++j) {
-        os << sharedSpeedField_->get(i, j) << " ";
+    for (size_t row = ny_; row > 0; --row) {
+      const size_t y = row - 1;
+      for (size_t x = 0; x < nx_; ++x) {
+        os << sharedSpeedField_->get(x, y) << " ";
       }
       os << "\n";
     }
