@@ -22,19 +22,20 @@ int main() {
     vbm::Environment env(config);
 
     vbm::Solver sol(env);
-    if (config.vstar) {
-      sol.vStarSearch();
+    bool allSolversSucceeded = true;
+    if (config.vstar && !sol.vStarSearch()) {
+      allSolversSucceeded = false;
     }
-    if (config.astar) {
-      sol.aStarSearch();
+    if (config.astar && !sol.aStarSearch()) {
+      allSolversSucceeded = false;
     }
-    if (config.distanceFunction) {
-      sol.computeDistanceFunction();
+    if (config.distanceFunction && !sol.computeDistanceFunction()) {
+      allSolversSucceeded = false;
     }
-    if (config.visibilityBasedSolver) {
-      sol.visibilityBasedSolver();
+    if (config.visibilityBasedSolver && !sol.visibilityBasedSolver()) {
+      allSolversSucceeded = false;
     }
-    return EXIT_SUCCESS;
+    return allSolversSucceeded ? EXIT_SUCCESS : EXIT_FAILURE;
   } catch (const std::exception &error) {
     std::cerr << "Fatal error: " << error.what() << '\n';
     return EXIT_FAILURE;

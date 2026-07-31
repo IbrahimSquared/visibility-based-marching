@@ -35,10 +35,10 @@ public:
   // Deconstructor
   ~Solver() = default;
 
-  void vStarSearch();
-  void aStarSearch();
-  void visibilityBasedSolver();
-  void computeDistanceFunction();
+  bool vStarSearch();             // Returns true when a path is found.
+  bool aStarSearch();             // Returns true when a path is found.
+  bool visibilityBasedSolver();   // Returns false for an invalid start set.
+  bool computeDistanceFunction(); // Returns true after successful completion.
 
   // Get global iterator (number of iterations that had to be completed)
   inline int getNbOfIterations() const { return nb_of_iterations_; };

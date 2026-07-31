@@ -188,6 +188,16 @@ bool ConfigParser::parse(const std::string &filename) {
         std::cerr << "It must be a boolean\n";
         return false;
       }
+    } else if (key == "msfm") {
+      if (value == "0" || value == "false") {
+        config_.msfm = false;
+      } else if (value == "1" || value == "true") {
+        config_.msfm = true;
+      } else {
+        std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a boolean\n";
+        return false;
+      }
     } else if (key == "expandInObstacles") {
       if (value == "0" || value == "false") {
         config_.expandInObstacles = false;
@@ -492,6 +502,7 @@ bool ConfigParser::parse(const std::string &filename) {
         << config_.greedy << "\n"
         << "Compute visibility-based implementation: "
         << config_.visibilityBasedSolver << "\n"
+        << "Compute MSFM in the MATLAB interface: " << config_.msfm << "\n"
         << "Expand in obstacles: " << config_.expandInObstacles << "\n"
         << "Compute basic AStar: " << config_.astar << "\n"
         << "Compute distance functions: " << config_.distanceFunction

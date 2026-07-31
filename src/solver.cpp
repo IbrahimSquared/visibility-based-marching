@@ -105,7 +105,7 @@ void Solver::reset() {
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::visibilityBasedSolver() {
+bool Solver::visibilityBasedSolver() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -115,14 +115,14 @@ void Solver::visibilityBasedSolver() {
 
   auto &initial_frontline = sharedConfig_->initialFrontline;
 
-  if (initial_frontline.size() % 2 != 0) {
+  if (initial_frontline.empty() || initial_frontline.size() % 2 != 0) {
     std::cout << "###################### Visibility-based solver output "
                  "######################"
               << std::endl;
-    std::cout << "Initial frontline must be of size that is a multiple of 2 "
+    std::cout << "Initial frontline must contain one or more coordinate pairs "
                  "for visibility-based solver"
               << std::endl;
-    return;
+    return false;
   }
   for (size_t i = 0; i < initial_frontline.size(); i += 2) {
     x = initial_frontline[i];
@@ -134,7 +134,7 @@ void Solver::visibilityBasedSolver() {
                 << std::endl;
       std::cout << "At least one of the starting positions is outside the map"
                 << std::endl;
-      return;
+      return false;
     }
 
     if (sharedVisibilityField_->get(x, y) < 1) {
@@ -143,7 +143,7 @@ void Solver::visibilityBasedSolver() {
                 << std::endl;
       std::cout << "At least one of the starting positions is invalid/occupied"
                 << std::endl;
-      return;
+      return false;
     }
 
     d = 0;
@@ -241,16 +241,17 @@ void Solver::visibilityBasedSolver() {
   }
   if (sharedConfig_->saveResults) {
     saveResults({}, "visibilityBased");
+    if (sharedConfig_->saveVisibilityBasedSolverImage) {
+      saveVisibilityBasedSolverImage(gScore_);
+    }
   }
-  if (sharedConfig_->saveVisibilityBasedSolverImage) {
-    saveVisibilityBasedSolverImage(gScore_);
-  }
+  return true;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::vStarSearch() {
+bool Solver::vStarSearch() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -265,7 +266,7 @@ void Solver::vStarSearch() {
                  "######################"
               << std::endl;
     std::cout << "Target position is outside the map" << std::endl;
-    return;
+    return false;
   }
 
   if (sharedVisibilityField_->get(endX, endY) < 1) {
@@ -273,7 +274,7 @@ void Solver::vStarSearch() {
                  "######################"
               << std::endl;
     std::cout << "Target position is invalid/occupied" << std::endl;
-    return;
+    return false;
   }
 
   auto &initial_frontline = sharedConfig_->initialFrontline;
@@ -282,7 +283,7 @@ void Solver::vStarSearch() {
                  "######################"
               << std::endl;
     std::cout << "Initial frontline must be of size 2 for vStar" << std::endl;
-    return;
+    return false;
   }
 
   // Fill in data from initial frontline
@@ -292,12 +293,12 @@ void Solver::vStarSearch() {
 
     if (!isValid(x, y)) {
       std::cout << "The starting position is outside the map" << std::endl;
-      return;
+      return false;
     }
 
     if (sharedVisibilityField_->get(x, y) < 1) {
       std::cout << "Starting position is invalid/occupied" << std::endl;
-      return;
+      return false;
     }
     g = 0;
     h = 0;
@@ -347,7 +348,7 @@ void Solver::vStarSearch() {
         std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       }
       reconstructPath(current, "vstar");
-      return;
+      return true;
     }
 
     openSet_->pop();
@@ -419,12 +420,13 @@ void Solver::vStarSearch() {
               << std::endl;
     std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
   }
+  return false;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::aStarSearch() {
+bool Solver::aStarSearch() {
   reset();
   const auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -440,7 +442,7 @@ void Solver::aStarSearch() {
                  "######################"
               << std::endl;
     std::cout << "Target position is outside the map" << std::endl;
-    return;
+    return false;
   }
 
   // check if target is feasible
@@ -450,7 +452,7 @@ void Solver::aStarSearch() {
               << std::endl;
 
     std::cout << "Target position is invalid/occupied" << std::endl;
-    return;
+    return false;
   }
 
   auto &initial_frontline = sharedConfig_->initialFrontline;
@@ -462,7 +464,7 @@ void Solver::aStarSearch() {
               << std::endl;
 
     std::cout << "Initial frontline must be of size 2 for aStar" << std::endl;
-    return;
+    return false;
   }
 
   // Fill in data from initial frontline
@@ -473,13 +475,13 @@ void Solver::aStarSearch() {
     // check if starting positions are inside the map
     if (!isValid(x, y)) {
       std::cout << "The starting position is outside the map" << std::endl;
-      return;
+      return false;
     }
 
     // Check if starting position is valid
     if (sharedVisibilityField_->get(x, y) < 1) {
       std::cout << "Starting position is invalid/occupied" << std::endl;
-      return;
+      return false;
     }
 
     g = 0;
@@ -526,7 +528,7 @@ void Solver::aStarSearch() {
         std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       }
       reconstructPath(current, "astar");
-      return;
+      return true;
     }
 
     inOpenSet_(x, y) = false;
@@ -580,12 +582,13 @@ void Solver::aStarSearch() {
     }
     std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
   }
+  return false;
 }
 
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-void Solver::computeDistanceFunction() {
+bool Solver::computeDistanceFunction() {
   reset();
   auto startTime = std::chrono::high_resolution_clock::now();
   std::vector<int> initial_frontline;
@@ -671,10 +674,11 @@ void Solver::computeDistanceFunction() {
   }
   if (sharedConfig_->saveResults) {
     saveResults({}, "distanceFunction");
+    if (sharedConfig_->saveDistanceFunctionImage) {
+      saveDistanceFunctionImage(gScore_);
+    }
   }
-  if (sharedConfig_->saveDistanceFunctionImage) {
-    saveDistanceFunctionImage(gScore_);
-  }
+  return true;
 }
 
 /*****************************************************************************/

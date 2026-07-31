@@ -28,6 +28,7 @@ struct Config {
   bool timer = true;
   bool greedy = true;
   bool visibilityBasedSolver = true;
+  bool msfm = false;
   bool expandInObstacles = true;
   bool vstar = true;
   bool astar = true;
