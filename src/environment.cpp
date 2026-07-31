@@ -14,11 +14,12 @@ namespace vbm {
 /*****************************************************************************/
 Environment::Environment(Config &config)
     : sharedConfig_(std::make_shared<Config>(config)) {
+  speedValue_ = sharedConfig_->speedValue;
+
   if (sharedConfig_->mode == 1) {
     nx_ = sharedConfig_->ncols;
     ny_ = sharedConfig_->nrows;
 
-    speedValue_ = sharedConfig_->speedValue;
     if (!sharedConfig_->randomSeed) {
       seedValue_ = sharedConfig_->seedValue;
     }
