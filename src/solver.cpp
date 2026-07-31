@@ -333,21 +333,19 @@ void Solver::vStarSearch() {
       auto stopTime = std::chrono::high_resolution_clock::now();
       auto executionDuration = durationInMicroseconds(startTime, stopTime);
 
-      if (sharedConfig_->silent) {
-        return;
+      if (!sharedConfig_->silent) {
+        std::cout << "###################### VStar solver output "
+                     "######################"
+                  << std::endl;
+        std::cout << "Path found" << std::endl;
+        if (sharedConfig_->timer) {
+          std::cout << "Execution time in us: " << executionDuration << "us"
+                    << std::endl;
+        }
+        std::cout << "Load factor: " << visibilityHashMap_.load_factor()
+                  << std::endl;
+        std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       }
-      std::cout << "###################### VStar solver output "
-                   "######################"
-                << std::endl;
-      std::cout << "Path found" << std::endl;
-      if (!sharedConfig_->timer) {
-        return;
-      }
-      std::cout << "Execution time in us: " << executionDuration << "us"
-                << std::endl;
-      std::cout << "Load factor: " << visibilityHashMap_.load_factor()
-                << std::endl;
-      std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       reconstructPath(current, "vstar");
       return;
     }
@@ -412,15 +410,14 @@ void Solver::vStarSearch() {
     std::cout << "###################### VStar solver output "
                  "######################"
               << std::endl;
+    std::cout << "Path could not be found" << std::endl;
     if (sharedConfig_->timer) {
-      std::cout << "Path could not be found" << std::endl;
       std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
-      std::cout << "Load factor: " << visibilityHashMap_.load_factor()
-                << std::endl;
-      std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
-      reconstructPath({}, "vstar");
     }
+    std::cout << "Load factor: " << visibilityHashMap_.load_factor()
+              << std::endl;
+    std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
   }
 }
 
@@ -517,19 +514,17 @@ void Solver::aStarSearch() {
       const auto executionDuration =
           durationInMicroseconds(startTime, stopTime);
 
-      if (sharedConfig_->silent) {
-        return;
+      if (!sharedConfig_->silent) {
+        std::cout << "##################### AStar solver output "
+                     "#####################"
+                  << std::endl;
+        std::cout << "Path found" << std::endl;
+        if (sharedConfig_->timer) {
+          std::cout << "Execution time in us: " << executionDuration << "us"
+                    << std::endl;
+        }
+        std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       }
-      std::cout << "##################### AStar solver output "
-                   "#####################"
-                << std::endl;
-      std::cout << "Path found" << std::endl;
-      if (!sharedConfig_->timer) {
-        return;
-      }
-      std::cout << "Execution time in us: " << executionDuration << "us"
-                << std::endl;
-      std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       reconstructPath(current, "astar");
       return;
     }
@@ -578,13 +573,12 @@ void Solver::aStarSearch() {
     std::cout << "##################### AStar Solver output "
                  "#####################"
               << std::endl;
+    std::cout << "Path could not be found" << std::endl;
     if (sharedConfig_->timer) {
-      std::cout << "Path could not be found" << std::endl;
       std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
-      std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
-      reconstructPath({}, "astar");
     }
+    std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
   }
 }
 
