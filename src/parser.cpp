@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 
 namespace vbm {
 
@@ -15,6 +16,11 @@ bool ConfigParser::parse(const std::string &filename) {
     std::cerr << "Failed to open " << filename << '\n';
     return false;
   }
+  config_ = Config{};
+  bool initialFrontlineProvided = false;
+  bool targetXProvided = false;
+  bool targetYProvided = false;
+
   std::cout << "########################### Parsing config file  "
                "########################## \n";
   std::cout << "Attempting to parse " << filename << '\n';
@@ -126,6 +132,8 @@ bool ConfigParser::parse(const std::string &filename) {
         config_.minHeight = std::stoi(value);
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a positive integer\n";
+        return false;
       }
     } else if (key == "maxHeight") {
       try {
@@ -221,10 +229,18 @@ bool ConfigParser::parse(const std::string &filename) {
         return false;
       }
     } else if (key == "initialFrontline") {
-      config_.initialFrontline = parseVectorString(value);
+      try {
+        config_.initialFrontline = parseVectorString(value);
+        initialFrontlineProvided = true;
+      } catch (...) {
+        std::cerr << "Invalid value for " << key << ": " << value << '\n';
+        std::cerr << "It must be a brace-enclosed list of integers\n";
+        return false;
+      }
     } else if (key == "target_x") {
       try {
         config_.target_x = std::stoi(value);
+        targetXProvided = true;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -233,6 +249,7 @@ bool ConfigParser::parse(const std::string &filename) {
     } else if (key == "target_y") {
       try {
         config_.target_y = std::stoi(value);
+        targetYProvided = true;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -421,6 +438,27 @@ bool ConfigParser::parse(const std::string &filename) {
       std::cerr << "Ignoring...\n";
     }
   }
+  const bool pointToPointSolverEnabled = config_.vstar || config_.astar;
+  if (pointToPointSolverEnabled &&
+      (!targetXProvided || !targetYProvided)) {
+    std::cerr << "target_x and target_y are required when VStar or AStar is "
+                 "enabled\n";
+    return false;
+  }
+  if (pointToPointSolverEnabled &&
+      (!initialFrontlineProvided || config_.initialFrontline.size() != 2)) {
+    std::cerr << "initialFrontline must contain exactly one coordinate pair "
+                 "when VStar or AStar is enabled\n";
+    return false;
+  }
+  if (config_.visibilityBasedSolver &&
+      (!initialFrontlineProvided || config_.initialFrontline.empty() ||
+       config_.initialFrontline.size() % 2 != 0)) {
+    std::cerr << "initialFrontline must contain one or more coordinate pairs "
+                 "when the visibility-based solver is enabled\n";
+    return false;
+  }
+
   if (!config_.silent) {
     if (config_.mode == 1) {
       std::cout << "Random environment mode" << std::endl;
@@ -490,18 +528,36 @@ bool ConfigParser::parse(const std::string &filename) {
 /*****************************************************************************/
 /*****************************************************************************/
 std::vector<int> ConfigParser::parseVectorString(const std::string &str) {
-  // Remove outer braces
-  std::string innerStr = str.substr(1, str.size() - 2);
-  // Split string into individual integers
-  std::vector<int> result;
-  std::string delimiter = ",";
-  size_t pos = 0;
-  while ((pos = innerStr.find(delimiter)) != std::string::npos) {
-    std::string token = innerStr.substr(0, pos);
-    result.push_back(std::stoi(token));
-    innerStr.erase(0, pos + delimiter.length());
+  if (str.size() < 2 || str.front() != '{' || str.back() != '}') {
+    throw std::invalid_argument("missing braces");
   }
-  result.push_back(std::stoi(innerStr)); // Add the last integer
+
+  std::string innerStr = str.substr(1, str.size() - 2);
+  std::vector<int> result;
+  if (innerStr.find_first_not_of(" \t") == std::string::npos) {
+    return result;
+  }
+
+  std::istringstream input(innerStr);
+  for (std::string token; std::getline(input, token, ',');) {
+    const size_t first = token.find_first_not_of(" \t");
+    if (first == std::string::npos) {
+      throw std::invalid_argument("empty coordinate");
+    }
+    const size_t last = token.find_last_not_of(" \t");
+    token = token.substr(first, last - first + 1);
+
+    size_t parsedCharacters = 0;
+    const int coordinate = std::stoi(token, &parsedCharacters);
+    if (parsedCharacters != token.size()) {
+      throw std::invalid_argument("invalid coordinate");
+    }
+    result.push_back(coordinate);
+  }
+
+  if (!innerStr.empty() && innerStr.back() == ',') {
+    throw std::invalid_argument("empty coordinate");
+  }
   return result;
 }
 

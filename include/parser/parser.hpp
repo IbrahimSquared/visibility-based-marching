@@ -22,8 +22,8 @@ struct Config {
   int seedValue = 0;
   std::string imagePath = "C:\\..."; // or /home/...
   std::vector<int> initialFrontline;
-  int target_x;
-  int target_y;
+  int target_x = 0;
+  int target_y = 0;
   float visibilityThreshold = 0.5;
   bool timer = true;
   bool greedy = true;
