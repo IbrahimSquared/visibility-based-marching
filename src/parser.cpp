@@ -1,5 +1,6 @@
 #include "parser/parser.hpp"
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -64,12 +65,13 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "ncols") {
       try {
-        if (std::stoi(value) < 0) {
+        const int parsedValue = std::stoi(value);
+        if (parsedValue <= 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a positive integer\n";
           return false;
         }
-        config_.ncols = std::stoi(value);
+        config_.ncols = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -77,12 +79,13 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "nrows") {
       try {
-        if (std::stoi(value) < 0) {
+        const int parsedValue = std::stoi(value);
+        if (parsedValue <= 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a positive integer\n";
           return false;
         }
-        config_.nrows = std::stoi(value);
+        config_.nrows = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -90,20 +93,27 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "nb_of_obstacles") {
       try {
-        config_.nb_of_obstacles = std::stoi(value);
+        const int parsedValue = std::stoi(value);
+        if (parsedValue < 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a non-negative integer\n";
+          return false;
+        }
+        config_.nb_of_obstacles = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
-        std::cerr << "It must be an integer\n";
+        std::cerr << "It must be a non-negative integer\n";
         return false;
       }
     } else if (key == "minWidth") {
       try {
-        if (std::stoi(value) < 0) {
+        const int parsedValue = std::stoi(value);
+        if (parsedValue <= 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a positive integer\n";
           return false;
         }
-        config_.minWidth = std::stoi(value);
+        config_.minWidth = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -111,12 +121,13 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "maxWidth") {
       try {
-        if (std::stoi(value) < 0) {
+        const int parsedValue = std::stoi(value);
+        if (parsedValue <= 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a positive integer\n";
           return false;
         }
-        config_.maxWidth = std::stoi(value);
+        config_.maxWidth = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -124,12 +135,13 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "minHeight") {
       try {
-        if (std::stoi(value) < 0) {
+        const int parsedValue = std::stoi(value);
+        if (parsedValue <= 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a positive integer\n";
           return false;
         }
-        config_.minHeight = std::stoi(value);
+        config_.minHeight = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -137,12 +149,13 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "maxHeight") {
       try {
-        if (std::stoi(value) < 0) {
+        const int parsedValue = std::stoi(value);
+        if (parsedValue <= 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
           std::cerr << "It must be a positive integer\n";
           return false;
         }
-        config_.maxHeight = std::stoi(value);
+        config_.maxHeight = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
         std::cerr << "It must be a positive integer\n";
@@ -267,24 +280,31 @@ bool ConfigParser::parse(const std::string &filename) {
       }
     } else if (key == "visibilityThreshold") {
       try {
-        config_.visibilityThreshold = std::stod(value);
-        if (config_.visibilityThreshold > 1.0 ||
-            config_.visibilityThreshold < 0) {
+        const double parsedValue = std::stod(value);
+        if (!std::isfinite(parsedValue) || parsedValue > 1.0 ||
+            parsedValue < 0) {
           std::cerr << "Invalid value for " << key << ": " << value << '\n';
-          std::cerr << "It must be a double between 0 and 1\n";
+          std::cerr << "It must be a finite double between 0 and 1\n";
           return false;
         }
+        config_.visibilityThreshold = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
-        std::cerr << "It must be a positive double between 0 and 1\n";
+        std::cerr << "It must be a finite double between 0 and 1\n";
         return false;
       }
     } else if (key == "speedValue") {
       try {
-        config_.speedValue = std::stod(value);
+        const float parsedValue = std::stof(value);
+        if (!std::isfinite(parsedValue) || parsedValue <= 0) {
+          std::cerr << "Invalid value for " << key << ": " << value << '\n';
+          std::cerr << "It must be a finite positive number\n";
+          return false;
+        }
+        config_.speedValue = parsedValue;
       } catch (...) {
         std::cerr << "Invalid value for " << key << ": " << value << '\n';
-        std::cerr << "It must be a positive double\n";
+        std::cerr << "It must be a finite positive number\n";
         return false;
       }
     } else if (key == "timer") {
@@ -448,6 +468,17 @@ bool ConfigParser::parse(const std::string &filename) {
       std::cerr << "Ignoring...\n";
     }
   }
+  if (config_.mode == 1 && config_.minWidth > config_.maxWidth) {
+    std::cerr << "minWidth must be less than or equal to maxWidth in random "
+                 "environment mode\n";
+    return false;
+  }
+  if (config_.mode == 1 && config_.minHeight > config_.maxHeight) {
+    std::cerr << "minHeight must be less than or equal to maxHeight in random "
+                 "environment mode\n";
+    return false;
+  }
+
   const bool pointToPointSolverEnabled = config_.vstar || config_.astar;
   if (pointToPointSolverEnabled &&
       (!targetXProvided || !targetYProvided)) {
