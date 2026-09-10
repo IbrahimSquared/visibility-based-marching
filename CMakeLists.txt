@@ -27,3 +27,11 @@ add_executable(vbm src/main.cpp src/environment.cpp src/solver.cpp src/parser.cp
 find_package(SFML 2.5 COMPONENTS graphics REQUIRED)
 # Link the SFML graphics library
 target_link_libraries(vbm PRIVATE sfml-graphics)
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(visibility_cache_test tests/visibility_cache_test.cpp)
+    set_target_properties(visibility_cache_test PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    add_test(NAME visibility_cache COMMAND visibility_cache_test)
+endif()

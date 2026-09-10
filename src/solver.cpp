@@ -86,7 +86,7 @@ void Solver::reset() {
   lightSources_.clear();
   lightSources_.reserve(nx_ * ny_);
 
-  visibilityHashMap_.clear();
+  visibilityCache_.reset(nx_ * ny_);
   openSet_.reset();
 
   // Reserve openSet_
@@ -98,8 +98,6 @@ void Solver::reset() {
 
   nb_of_iterations_ = 0;
 
-  // Reserve hash map
-  visibilityHashMap_.reserve(nx_ * ny_);
 }
 
 /*****************************************************************************/
@@ -154,8 +152,8 @@ bool Solver::visibilityBasedSolver() {
     lightSources_.push_back({x, y});
 
     openSet_->push(Node{x, y, d});
-    const auto key = hashFunction(x, y, newSourceIndex);
-    visibilityHashMap_[key] = lightStrength_;
+    const auto cell = hashFunction(x, y, 0);
+    visibilityCache_.set(cell, newSourceIndex, lightStrength_);
     ++nb_of_iterations_;
   }
 
@@ -233,7 +231,7 @@ bool Solver::visibilityBasedSolver() {
     if (sharedConfig_->timer) {
       std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
-      std::cout << "Load factor: " << visibilityHashMap_.load_factor()
+      std::cout << "Cached visibility entries: " << visibilityCache_.size()
                 << std::endl;
       std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       std::cout << "Nb of sources: " << lightSources_.size() << std::endl;
@@ -314,8 +312,8 @@ bool Solver::vStarSearch() {
     cameFrom_(x, y) = newSourceIndex;
     updated_(x, y) = true;
     lightSources_.push_back({x, y});
-    const auto key = hashFunction(x, y, newSourceIndex);
-    visibilityHashMap_[key] = lightStrength_;
+    const auto cell = hashFunction(x, y, 0);
+    visibilityCache_.set(cell, newSourceIndex, lightStrength_);
     ++nb_of_iterations_;
   }
 
@@ -343,7 +341,7 @@ bool Solver::vStarSearch() {
           std::cout << "Execution time in us: " << executionDuration << "us"
                     << std::endl;
         }
-        std::cout << "Load factor: " << visibilityHashMap_.load_factor()
+        std::cout << "Cached visibility entries: " << visibilityCache_.size()
                   << std::endl;
         std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
       }
@@ -416,7 +414,7 @@ bool Solver::vStarSearch() {
       std::cout << "Execution time in us: " << executionDuration << "us"
                 << std::endl;
     }
-    std::cout << "Load factor: " << visibilityHashMap_.load_factor()
+    std::cout << "Cached visibility entries: " << visibilityCache_.size()
               << std::endl;
     std::cout << "Iterations: " << nb_of_iterations_ << std::endl;
   }
@@ -615,8 +613,8 @@ bool Solver::computeDistanceFunction() {
     const size_t newSourceIndex = lightSources_.size();
     cameFrom_(x, y) = newSourceIndex;
     lightSources_.push_back({x, y});
-    const auto key = hashFunction(x, y, newSourceIndex);
-    visibilityHashMap_[key] = lightStrength_;
+    const auto cell = hashFunction(x, y, 0);
+    visibilityCache_.set(cell, newSourceIndex, lightStrength_);
   }
 
   // For queing unique sources from neighbours of neighbour. At most the
@@ -810,8 +808,8 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
   const size_t newSourceIndex = lightSources_.size();
   lightSources_.push_back({x, y});
   // Pusback pivot & update light source visibility
-  const auto key = hashFunction(x, y, newSourceIndex);
-  visibilityHashMap_[key] = lightStrength_;
+  const auto cell = hashFunction(x, y, 0);
+  visibilityCache_.set(cell, newSourceIndex, lightStrength_);
   // Update maps of new pivot_
   // Update neighbours of initial frontline points - both distance & visibility
   for (size_t p = 0; p < 16; p += 2) {
@@ -837,18 +835,19 @@ void Solver::createNewPivot(const int x, const int y, const int neighbour_x,
 double Solver::updatePointVisibility(const size_t lightSourceNumber,
                                      const int LS_x, const int LS_y,
                                      const int x, const int y) {
-  const auto key = hashFunction(x, y, lightSourceNumber);
-  if (auto it = visibilityHashMap_.find(key); it != visibilityHashMap_.end()) {
-    return it->second;
+  const auto cell = hashFunction(x, y, 0);
+  double cachedVisibility;
+  if (visibilityCache_.tryGet(cell, lightSourceNumber, cachedVisibility)) {
+    return cachedVisibility;
   }
 
   if (x == LS_x && y == LS_y) {
-    visibilityHashMap_[key] = lightStrength_;
+    visibilityCache_.set(cell, lightSourceNumber, lightStrength_);
     return lightStrength_;
   }
 
   if (sharedVisibilityField_->get(x, y) < visibilityThreshold_) {
-    visibilityHashMap_[key] = 0;
+    visibilityCache_.set(cell, lightSourceNumber, 0);
     return 0;
   }
 
@@ -943,7 +942,7 @@ double Solver::updatePointVisibility(const size_t lightSourceNumber,
   }
 
   v *= sharedVisibilityField_->get(x, y);
-  visibilityHashMap_[key] = v;
+  visibilityCache_.set(cell, lightSourceNumber, v);
   return v;
 }
 

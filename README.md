@@ -20,6 +20,19 @@ The code has four main methods: <br>
 
 Set which methods to use in config/settings.config and what results to save. Uses SFML to make plots that are saved in output/ directory. You can either load a map or generate one randomly (can also fix the randomness seed number for repeatability).
 
+## Visibility cache
+
+VBM uses a compact cache to store visibility values between wave sources and
+grid cells. Each cell has one entry for a source, with additional entries for
+other sources as needed.
+
+Compared to the previous hash-table implementation, tests on 36 maps showed a
+median reduction in computation time of approximately 42%, with identical
+distances and paths. Tests were run on an Intel Core i9-13980HX using GCC 13.3.0.
+
+See [Visibility cache implementation and tests](docs/visibility-cache.md) for
+details and instructions to run the comparison.
+
 ## Sample marching in a couple of environments: <br>
 
 ![alt text](https://github.com/IbrahimSquared/visibility-based-marching/blob/main/images/examples/euclidean.png) <br>

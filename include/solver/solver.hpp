@@ -13,6 +13,7 @@
 
 #include "environment/environment.hpp"
 #include "flat_hash_map/flat_hash_map.hpp"
+#include "solver/visibility_cache.hpp"
 
 namespace vbm {
 
@@ -28,6 +29,7 @@ struct point {
 
 class Solver {
 public:
+  // Retained for source compatibility; the solver now uses VisibilityCache.
   using Map = ska::flat_hash_map<size_t, double>;
 
   explicit Solver(Environment &env);
@@ -144,9 +146,9 @@ private:
                                const int lightSource_x, const int lightSource_y,
                                const int x, const int y);
 
-  // Collision-free row-major key for the logical tuple
-  // (x, y, lightSourceNumber). This is a stored map key, not merely a bucket
-  // hash, so collisions would alias distinct visibility values.
+  // Legacy row-major tuple-key encoder, retained alongside Solver::Map.
+  // The compact cache uses source zero here to obtain only the cell index;
+  // it receives the actual source separately and performs no bucket hashing.
   inline size_t hashFunction(const int x, const int y,
                              const size_t lightSourceNumber) const noexcept {
     assert(x >= 0);
@@ -197,8 +199,7 @@ private:
 
   double visibilityThreshold_ = 0.5;
 
-  // Flat hash maps
-  Map visibilityHashMap_;
+  VisibilityCache visibilityCache_;
 
   // Unique pointer to image holder
   std::unique_ptr<sf::Image> uniqueLoadedImage_;
